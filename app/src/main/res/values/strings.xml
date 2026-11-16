@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Employee task manager</string>
+    <string name="welcome_message">Employee Task Manager</string>
+</resources>
