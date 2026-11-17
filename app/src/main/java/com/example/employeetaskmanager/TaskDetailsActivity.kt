@@ -17,7 +17,9 @@ import kotlinx.coroutines.launch
 
 class TaskDetailsActivity : AppCompatActivity() {
 
-    private val viewModel: TaskViewModel by viewModels()
+    private val viewModel: TaskViewModel by viewModels {
+        TaskViewModelFactory(applicationContext)
+    }
     private lateinit var taskAdapter: TaskAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {

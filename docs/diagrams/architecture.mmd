@@ -1,0 +1,38 @@
+flowchart TB
+
+    subgraph Runtime["Runtime Task Data Flow"]
+        Screen["SCREEN<br/>TaskDetailsActivity<br/>TaskAdapter"]
+        VM["VIEWMODEL<br/>TaskViewModel"]
+        Repo["REPOSITORY<br/>TaskRepository"]
+        DAO["ROOM DAO<br/>TaskDao"]
+        DB[("ROOM DATABASE<br/>AppDatabase<br/>task_database")]
+        Entity["ROOM ENTITY<br/>TaskEntity"]
+
+        Screen -->|"Add task / Mark complete"| VM
+        VM -->|"Insert / Update"| Repo
+        Repo -->|"Database operations"| DAO
+        DAO -->|"Read / Write"| DB
+
+        DB -->|"Task records"| DAO
+        DAO -->|"Flow of tasks"| Repo
+        Repo -->|"Flow<List<TaskEntity>>"| VM
+        VM -->|"StateFlow<List<TaskEntity>>"| Screen
+
+        Entity --- DB
+    end
+
+    subgraph Setup["ViewModel Dependency Creation"]
+        Factory["TaskViewModelFactory"]
+        FactoryDB["AppDatabase.getDatabase()"]
+        FactoryDAO["database.taskDao()"]
+        FactoryRepo["TaskRepository(taskDao)"]
+        FactoryVM["TaskViewModel(repository)"]
+
+        Factory --> FactoryDB
+        FactoryDB --> FactoryDAO
+        FactoryDAO --> FactoryRepo
+        FactoryRepo --> FactoryVM
+        FactoryVM -.->|"creates TaskViewModel"| VM
+    end
+
+    Screen -.->|"by viewModels(factory)"| Factory

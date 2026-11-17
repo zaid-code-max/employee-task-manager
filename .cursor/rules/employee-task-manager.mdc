@@ -1,0 +1,104 @@
+---
+description: Project-wide architecture and development rules for Employee Task Manager.
+alwaysApply: true
+---
+
+# Employee Task Manager — Cursor Project Rules
+
+## 1. Project Identity
+
+- Android application developed using Kotlin.
+- Package: `com.example.employeetaskmanager`.
+- Business request: Employees must view tasks, add tasks, mark complete, and see status.
+- Read the root `AGENTS.md` before making significant project changes.
+
+## 2. Approved Architecture
+
+Follow this architecture:
+
+Screen -> ViewModel -> Repository -> Storage (Room)
+
+### Screen
+
+- `MainActivity` and `TaskDetailsActivity` handle user interaction.
+- `TaskAdapter` displays tasks through RecyclerView.
+- Activities must communicate with `TaskViewModel` for task operations.
+- Do not access Room, AppDatabase, or TaskDao directly from Activities.
+
+### ViewModel
+
+- `TaskViewModel` manages task-related UI state.
+- Receive `TaskRepository` through constructor injection.
+- Use `StateFlow` and the existing coroutine lifecycle pattern.
+- Do not directly access `AppDatabase`, `TaskDao`, Room, or Android `Application`.
+
+### Repository
+
+- `TaskRepository` is the only application layer that performs task-related database operations through `TaskDao`.
+- Keep data access operations inside the Repository.
+
+### Storage
+
+- `TaskEntity` defines the task data.
+- `TaskDao` provides database operations.
+- `AppDatabase` provides the Room database instance.
+
+### Dependency Creation
+
+- `TaskViewModelFactory` constructs `AppDatabase`, obtains `TaskDao`, creates `TaskRepository`, and supplies the Repository to `TaskViewModel`.
+- Dependency creation must not bypass the Repository boundary for task operations.
+
+## 3. Task Business Rules
+
+- Task ID is a unique, auto-generated `Long`.
+- Task title must not be empty or blank.
+- New tasks start with `isCompleted = false`.
+- `isCompleted = false` means Pending.
+- `isCompleted = true` means Completed.
+- Task status must remain consistent with the stored completion state.
+- Preserve existing empty-task handling and input validation.
+
+## 4. Development Guidelines
+
+- Inspect relevant source files before editing.
+- Follow existing Kotlin, XML, and Gradle conventions.
+- Make minimal and incremental changes.
+- Preserve existing Day 1 and Day 2 functionality.
+- Do not introduce unrelated features or dependencies.
+- Do not invent business requirements.
+- Do not replace Room or change the approved architecture without an explicit requirement.
+- Keep UI logic out of Repository and Storage layers.
+- Keep database operations out of Activities and ViewModel.
+- Update relevant documentation when architecture or behavior changes.
+- Review the Git diff after modifications.
+- Do not commit or push unless explicitly requested.
+
+## 5. Build and Verification
+
+Use Windows PowerShell commands from the project root.
+
+Build:
+
+`.\gradlew.bat :app:assembleDebug`
+
+Unit tests:
+
+`.\gradlew.bat :app:test`
+
+- Run relevant verification after implementation changes.
+- Report actual build and test results.
+- Never claim a test passed unless it was executed successfully.
+- Report failures clearly before proposing unrelated changes.
+
+## 6. Project Documentation
+
+Use these files as project references:
+
+- `README.md`
+- `AGENTS.md`
+- `docs/REQUIREMENTS.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DEVELOPMENT_PLAN.md`
+- `docs/DECISIONS.md`
+- `docs/CURRENT_STATUS.md`
+- `docs/diagrams/architecture.mmd`

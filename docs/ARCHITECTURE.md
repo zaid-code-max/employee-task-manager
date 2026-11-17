@@ -44,7 +44,7 @@ The Storage layer is responsible for:
 - Updating task completion state.
 - Providing persistent task data to the Repository.
 
-The Storage implementation will be selected during implementation planning.
+The selected Storage implementation is the Room Persistence Library.
 
 ## 5. Data Flow
 
@@ -86,3 +86,42 @@ Existing Home -> Task Details navigation should be preserved unless the approved
 - Task state should have a consistent source of truth.
 - Existing working functionality should not be removed unnecessarily.
 - Implementation should follow the approved architecture before code changes begin.
+
+## 8. Room Storage Implementation
+
+The Storage layer is implemented using the Room Persistence Library.
+
+### TaskEntity
+- Defines the `tasks` database table.
+- Stores the task ID, title, and completion state.
+- Generates unique task IDs automatically.
+
+### TaskDao
+- `getAllTasks()` retrieves tasks as a Flow.
+- `insertTask()` inserts a task.
+- `updateTaskCompletion()` updates the completion state.
+
+### AppDatabase
+- Provides the Room database instance.
+- Uses a singleton database instance.
+- Database name: `task_database`.
+
+## 9. Dependency Creation
+
+`TaskDetailsActivity` obtains `TaskViewModel` using the `by viewModels` delegate and `TaskViewModelFactory`.
+
+The factory:
+1. Obtains the Room database instance.
+2. Retrieves `TaskDao`.
+3. Creates `TaskRepository`.
+4. Supplies the Repository to `TaskViewModel`.
+
+The ViewModel receives the Repository through its constructor and does not directly access Room, AppDatabase, or TaskDao.
+
+## 10. Architecture Diagram
+
+The Mermaid architecture diagram is maintained at:
+
+`docs/diagrams/architecture.mmd`
+
+It documents the runtime task-data flow and the ViewModel dependency-creation flow.
