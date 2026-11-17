@@ -1,4 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Employee task manager</string>
     <string name="welcome_message">Employee Task Manager</string>
+    <string name="dashboard_subtitle">Manage and track your daily tasks efficiently.</string>
+    <string name="task_details_button">Task Details</string>
+    <string name="task_details_title">Task Details</string>
+    <string name="task_details_description">Here you can view and manage task details.</string>
 </resources>
