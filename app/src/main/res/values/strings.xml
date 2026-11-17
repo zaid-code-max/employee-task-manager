@@ -4,6 +4,12 @@
     <string name="welcome_message">Employee Task Manager</string>
     <string name="dashboard_subtitle">Manage and track your daily tasks efficiently.</string>
     <string name="task_details_button">Task Details</string>
-    <string name="task_details_title">Task Details</string>
-    <string name="task_details_description">Here you can view and manage task details.</string>
+    <string name="task_details_title">Task Management</string>
+    <string name="task_details_description">View, add, and manage your tasks below.</string>
+    <string name="hint_task_title">Enter task title...</string>
+    <string name="btn_add_task">Add Task</string>
+    <string name="empty_tasks">No tasks available.</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_completed">Completed</string>
+    <string name="error_empty_title">Task title cannot be empty.</string>
 </resources>
