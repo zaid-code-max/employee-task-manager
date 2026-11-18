@@ -125,3 +125,101 @@ The Mermaid architecture diagram is maintained at:
 `docs/diagrams/architecture.mmd`
 
 It documents the runtime task-data flow and the ViewModel dependency-creation flow.
+
+## 11. Connection-by-Connection Explanation
+
+This section explains every connection shown in `docs/diagrams/architecture.mmd`.
+
+### A. Runtime Task Data Flow
+
+#### 1. Screen -> ViewModel
+
+- When the employee taps the Add Task button, `TaskDetailsActivity` calls `TaskViewModel.insertTask(title)`.
+- When the employee changes a task checkbox, `TaskAdapter` invokes the callback that calls `TaskViewModel.updateTaskCompletion(task.id, isCompleted)`.
+- The Screen sends user actions to the ViewModel instead of accessing the database directly.
+
+#### 2. ViewModel -> Repository
+
+- `TaskViewModel` calls `TaskRepository.insertTask()` to create a task.
+- It calls `TaskRepository.updateTaskCompletion()` to update task completion.
+- It observes `TaskRepository.allTasks` to receive task data.
+
+#### 3. Repository -> TaskDao
+
+- `TaskRepository` delegates task retrieval to `TaskDao.getAllTasks()`.
+- It delegates task insertion to `TaskDao.insertTask()`.
+- It delegates completion updates to `TaskDao.updateTaskCompletion()`.
+
+#### 4. TaskDao -> AppDatabase
+
+- Room executes the DAO query and database operations.
+- `getAllTasks()` runs `SELECT * FROM tasks`.
+- `insertTask()` inserts a task using the configured conflict strategy.
+- `updateTaskCompletion()` updates the `isCompleted` value for the specified task ID.
+
+#### 5. AppDatabase -> TaskDao -> Repository
+
+- Room provides the task records returned by the DAO query.
+- `getAllTasks()` exposes the query results as `Flow<List<TaskEntity>>`.
+- Room updates the observable query results when the tasks table changes.
+
+#### 6. Repository -> ViewModel
+
+- `TaskRepository` exposes the DAO task stream through its `allTasks` property.
+- `TaskViewModel` converts this Flow into `StateFlow<List<TaskEntity>>` using `stateIn()`.
+
+#### 7. ViewModel -> Screen
+
+- `TaskViewModel.allTasks` exposes the current task list as StateFlow.
+- `TaskDetailsActivity` collects this state using `repeatOnLifecycle(Lifecycle.State.STARTED)`.
+- The Activity submits updated tasks to `TaskAdapter`.
+- The Activity also updates the empty-state visibility according to whether the task list is empty.
+
+#### 8. TaskEntity -> AppDatabase
+
+- `TaskEntity` represents the `tasks` database table.
+- Its fields define task identity, title, and completion state.
+- The entity is registered in the Room `AppDatabase`.
+
+### B. ViewModel Dependency Creation Flow
+
+This flow creates the dependencies required by the ViewModel. It is separate from normal task operations.
+
+#### 9. Screen -> TaskViewModelFactory
+
+- `TaskDetailsActivity` uses the `by viewModels` delegate.
+- It supplies `TaskViewModelFactory(applicationContext)` to create the ViewModel.
+
+#### 10. TaskViewModelFactory -> AppDatabase
+
+- The Factory calls `AppDatabase.getDatabase(context)`.
+- The database provides the application's Room database instance.
+
+#### 11. AppDatabase -> TaskDao
+
+- The Factory calls `database.taskDao()`.
+- This obtains the DAO used for task data operations.
+
+#### 12. TaskDao -> TaskRepository
+
+- The Factory creates `TaskRepository(database.taskDao())`.
+- The Repository receives the DAO through its constructor.
+
+#### 13. TaskRepository -> TaskViewModel
+
+- The Factory creates `TaskViewModel(repository)`.
+- The ViewModel receives the Repository through constructor injection.
+
+#### 14. Factory-created ViewModel -> Runtime ViewModel
+
+- The Factory returns the requested `TaskViewModel` instance to the ViewModel provider.
+- The Screen receives that instance through the `by viewModels` delegate.
+- The ViewModel then participates in the runtime task data flow described above.
+
+### C. Architecture Boundary Summary
+
+- The Screen communicates with the ViewModel.
+- The ViewModel communicates with the Repository.
+- The Repository performs task-related data operations through TaskDao.
+- Room manages persistent task data.
+- The Factory creates and supplies dependencies; it does not replace the Repository as the task data-access boundary.
