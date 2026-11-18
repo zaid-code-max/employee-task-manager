@@ -37,9 +37,12 @@ class TaskAdapter(
             if (task.isCompleted) {
                 statusTextView.text = itemView.context.getString(R.string.status_completed)
                 statusTextView.setTextColor(itemView.context.getColor(android.R.color.holo_green_dark))
+                // Once completed, task cannot be unchecked
+                checkBox.isEnabled = false
             } else {
                 statusTextView.text = itemView.context.getString(R.string.status_pending)
                 statusTextView.setTextColor(itemView.context.getColor(android.R.color.holo_orange_dark))
+                checkBox.isEnabled = true
             }
 
             checkBox.setOnCheckedChangeListener { _, isChecked ->

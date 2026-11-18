@@ -29,7 +29,10 @@ class TaskDetailsActivity : AppCompatActivity() {
         val editTextTaskTitle = findViewById<EditText>(R.id.editTextTaskTitle)
         val buttonAddTask = findViewById<Button>(R.id.buttonAddTask)
         val recyclerViewTasks = findViewById<RecyclerView>(R.id.recyclerViewTasks)
-        val textViewEmptyState = findViewById<TextView>(R.id.textViewEmptyState)
+        val textViewEmptyState = findViewById<View>(R.id.textViewEmptyState)
+        val textViewTotalCount = findViewById<TextView>(R.id.textViewTotalCount)
+        val textViewPendingCount = findViewById<TextView>(R.id.textViewPendingCount)
+        val textViewCompletedCount = findViewById<TextView>(R.id.textViewCompletedCount)
 
         taskAdapter = TaskAdapter { task, isCompleted ->
             viewModel.updateTaskCompletion(task.id, isCompleted)
@@ -52,6 +55,15 @@ class TaskDetailsActivity : AppCompatActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.allTasks.collect { tasks ->
                     taskAdapter.submitList(tasks)
+
+                    val total = tasks.size
+                    val completed = tasks.count { it.isCompleted }
+                    val pending = total - completed
+
+                    textViewTotalCount.text = getString(R.string.stats_total_fmt, total)
+                    textViewPendingCount.text = getString(R.string.stats_pending_fmt, pending)
+                    textViewCompletedCount.text = getString(R.string.stats_completed_fmt, completed)
+
                     if (tasks.isEmpty()) {
                         recyclerViewTasks.visibility = View.GONE
                         textViewEmptyState.visibility = View.VISIBLE
