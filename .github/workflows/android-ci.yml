@@ -41,7 +41,7 @@ jobs:
           sdkmanager --channel=3 "platforms;android-37.0" "build-tools;36.0.0"
 
       - name: Run unit tests and build Debug APK
-        run: ./gradlew --no-daemon clean testDebugUnitTest assembleDebug
+        run: bash ./gradlew --no-daemon clean testDebugUnitTest assembleDebug
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v7
