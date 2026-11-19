@@ -70,13 +70,18 @@ The ViewModel receives the Repository through constructor injection. The Factory
 - Debug APK installation on Xiaomi Redmi Note 8 Pro: SUCCESSFUL.
 - Final device verification: SUCCESSFUL.
 - Unit tests after removing incomplete Backup/Restore methods: 1 passed, 0 failed.
+- Added direct Room migration from original repository schema v1 to v4, retaining all existing rows and assigning existing tasks Medium priority.
+- Retained v3 to v4 migration for the intermediate development schema.
+- Removed destructive migration fallback so unknown schema versions cannot be silently wiped.
+- Added GitHub Actions Android CI workflow to run unit tests and build the Debug APK.
+- CI for the new workflow has not yet been verified in GitHub Actions.
 
 Note: Original root causes of Bug A and Bug B have not been conclusively established.
 
 ## Next
 
 - Review any feedback on Pull Request #1.
-- Address the known destructive-migration fallback risk before a production release.
+- Verify the new GitHub Actions workflow run and add Room migration tests.
 - Keep the pull request open until review is complete and merge is explicitly approved.
 
 ## Blocked
@@ -121,7 +126,7 @@ Note: Original root causes of Bug A and Bug B have not been conclusively establi
 - First Day 4 implementation commit: `3eb3e7e`.
 - Day 4 feature implementation commit: `1fe3003`.
 - Remote branch: `origin/feature/task-list`.
-- Local working tree was verified clean and synchronized with the remote branch after the Day 4 push.
+- Local working tree was verified clean and synchronized after the original Day 4 push; additional review-preparation commits have since been added directly to the remote feature branch and must be pulled locally.
 - Pull Request #1: [Day 4: Complete Task List with Priority and Delete Features](https://github.com/zaid-code-max/employee-task-manager/pull/1).
 - Pull Request base: `main`.
 - Pull Request compare branch: `feature/task-list`.
