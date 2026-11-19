@@ -37,7 +37,6 @@ class TaskDetailsActivity : AppCompatActivity() {
         val textViewTotalCount = findViewById<TextView>(R.id.textViewTotalCount)
         val textViewPendingCount = findViewById<TextView>(R.id.textViewPendingCount)
         val textViewCompletedCount = findViewById<TextView>(R.id.textViewCompletedCount)
-        val textViewTaskCountBadge = findViewById<TextView>(R.id.textViewTaskCountBadge)
 
         val btnFilterAll = findViewById<Button>(R.id.btnFilterAll)
         val btnFilterPending = findViewById<Button>(R.id.btnFilterPending)
@@ -123,7 +122,6 @@ class TaskDetailsActivity : AppCompatActivity() {
                         textViewTotalCount.text = total.toString()
                         textViewPendingCount.text = pending.toString()
                         textViewCompletedCount.text = completed.toString()
-                        textViewTaskCountBadge.text = "$total tasks"
                     }
                 }
 
