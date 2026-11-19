@@ -6,6 +6,8 @@
     <color name="primary_indigo">#6475F5</color>
     <color name="text_white">#FFFFFF</color>
     <color name="text_muted">#94A3B8</color>
+    <color name="status_green">#22C55E</color>
+    <color name="status_amber">#F59E0B</color>
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
