@@ -1,18 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Employee Task Manager</string>
+    <string name="app_name">Employee task manager</string>
     <string name="welcome_message">Employee Task Manager</string>
-    <string name="dashboard_subtitle">Your workday, organized in one place.</string>
-    <string name="employee_workspace">EMPLOYEE WORKSPACE</string>
-    <string name="hero_title_prefix">Work smarter. </string>
-    <string name="hero_title_highlight">Achieve more.</string>
-    <string name="card_heading">Turn your tasks into achievements</string>
-    <string name="card_desc">Plan your work, stay focused, and celebrate every task you complete.</string>
-    <string name="feature_1">Keep all your tasks organized</string>
-    <string name="feature_2">Add and manage daily tasks</string>
-    <string name="feature_3">Track your progress effortlessly</string>
-    <string name="open_task_manager">Open Task Manager</string>
-    <string name="footer_text">ONE TASK AT A TIME. ONE STEP CLOSER.</string>
+    <string name="dashboard_subtitle">Manage and track your daily tasks efficiently.</string>
     <string name="task_details_button">Task Details</string>
     <string name="task_details_title">My Tasks</string>
     <string name="task_details_subtitle">Stay organized. Get things done.</string>
@@ -25,12 +15,5 @@
     <string name="status_pending">Pending</string>
     <string name="status_completed">Completed</string>
     <string name="error_empty_title">Task title cannot be empty.</string>
-    <string name="stats_total_label">TOTAL</string>
-    <string name="stats_pending_label">PENDING</string>
-    <string name="stats_completed_label">COMPLETED</string>
-    <string name="stats_total_fmt">%d</string>
-    <string name="stats_pending_fmt">%d</string>
-    <string name="stats_completed_fmt">%d</string>
     <string name="section_your_tasks">Your Tasks</string>
-    <string name="delete_task">Delete task</string>
 </resources>

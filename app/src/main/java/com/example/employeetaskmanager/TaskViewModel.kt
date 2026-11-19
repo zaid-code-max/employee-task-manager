@@ -15,22 +15,16 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
-    fun insertTask(title: String, priority: String = "Medium") {
+    fun insertTask(title: String) {
         if (title.isBlank()) return
         viewModelScope.launch {
-            repository.insertTask(TaskEntity(title = title.trim(), priority = priority))
+            repository.insertTask(TaskEntity(title = title.trim()))
         }
     }
 
     fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
         viewModelScope.launch {
             repository.updateTaskCompletion(taskId, isCompleted)
-        }
-    }
-
-    fun deleteTask(taskId: Long) {
-        viewModelScope.launch {
-            repository.deleteTask(taskId)
         }
     }
 }

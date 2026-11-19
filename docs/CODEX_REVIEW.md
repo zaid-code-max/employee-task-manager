@@ -1,30 +1,49 @@
 # Employee Task Manager — Codex Review
 
-## 1. Missing Cases
+## Day 3 Plan Review
 
-- Task data fields are not yet defined.
-- Storage technology is not yet selected.
-- Duplicate-task handling needs a specific implementation rule.
-- The exact empty-task UI behavior is not yet defined.
-- The relationship between the existing Task Details screen and the new task-management screen needs to be decided.
+### Missing Cases
+- Task data fields are defined in the approved task model.
+- Storage technology is selected as Room.
+- Duplicate-task handling follows the existing insert behavior.
+- Empty-task UI is handled in the Task List screen.
+- The existing Home -> Task Details navigation is preserved.
 
-## 2. Risks
-
+### Risks
 - Changing existing screens too early could break working Day 1 and Day 2 functionality.
-- Adding ViewModel, Repository, and Storage layers without defining their responsibilities first could create unnecessary complexity.
-- Choosing a storage solution before reviewing the architecture could require rework later.
 - Task status could become inconsistent if completion state is not managed through a single source of truth.
+- Task operations must remain within the approved Screen -> ViewModel -> Repository -> Storage architecture.
 
-## 3. Assumptions
+## Day 4 Scope Review
 
-- The existing Home -> Task Details navigation should remain functional unless the approved architecture requires a change.
-- The task list will be managed through the planned Screen -> ViewModel -> Repository -> Storage flow.
-- Task completion must be persisted through the Storage layer.
-- The ViewModel will manage UI-related task state rather than storing task data directly in the Activity.
-- Implementation will begin only after the requirements, architecture, and development plan have been reviewed and approved.
+### Required scope
+- Task List screen UI only.
+- Task viewing, task creation, completion marking, and Pending/Completed status from the approved Day 3 plan.
+- Empty-task state handling.
+- Build, launch, inspect runtime behavior, and debug the two controlled bugs.
+- Deliver APK, feature branch, PR, Codex review, `DEBUGGING_LOG.md`, and `CURRENT_STATUS.md`.
 
-## 4. Review Outcome
+### Excluded from this PR
+- Task priority and priority-based ordering.
+- Task deletion and confirmation dialog.
+- Dashboard statistics.
+- Database schema upgrades or migration tests.
+- CI workflow additions.
+- Home Screen redesign.
 
-The development plan is suitable as a starting point, but the task data model, storage approach, duplicate handling, empty-state behavior, and relationship with the existing Task Details screen must be defined during architecture planning.
+### Source Inspection
+- `MainActivity` retains the existing Home -> Task Details click listener.
+- `TaskDetailsActivity` wires the Add Task button, submits tasks through `TaskViewModel`, collects the task Flow, and switches between list and empty state.
+- The empty-state container is a `LinearLayout`; the Activity retrieves it as `View` to avoid an incorrect view-type cast.
+- `TaskViewModel` uses `SharingStarted.Eagerly` so the Room-backed Flow is collected for the ViewModel lifetime.
+- Task data model, DAO, Repository, and Room schema remain unchanged from the approved Day 3 baseline.
 
-No application code should be changed during this review stage.
+### Review Findings / Remaining Validation
+- The exact button involved in Bug A and its debugger trace are not yet captured.
+- The original root cause for Bug B is not yet proven by a breakpoint trace.
+- A clean build, unit-test run, and device retest are still required after this scope reduction.
+
+### Review Outcome
+**Static scope/code inspection:** Completed.
+
+**Runtime acceptance:** Pending. Do not treat this review as proof that the cleaned APK has passed build or device testing.

@@ -2,136 +2,40 @@
 
 ## Done
 
-### Day 3 Implementation
+### Day 3 Baseline
+- Room storage, Repository, ViewModel, and ViewModelFactory.
+- Task creation, viewing, completion, status display, empty state, and input validation.
+- Home to Task Details navigation.
+- Approved architecture: `Screen -> ViewModel -> Repository -> Storage`.
 
-The Day 3 implementation of the Employee Task Manager is complete.
-
-- Room Storage Layer: `AppDatabase`, `TaskEntity`, and `TaskDao`.
-- Repository Layer: `TaskRepository`.
-- ViewModel Layer: `TaskViewModel`.
-- Dependency Creation: `TaskViewModelFactory`.
-- Screen Layer: `TaskDetailsActivity` and `TaskAdapter`.
-- Task viewing, creation, completion, and status display.
-- Empty-task state and empty-input validation.
-- Local task persistence using Room.
-- Existing Home to Task Details navigation preserved.
-
-### Architecture
-
-Approved architecture:
-
-`Screen -> ViewModel -> Repository -> Storage`
-
-The ViewModel receives the Repository through constructor injection. The Factory creates and supplies the required dependencies.
-
-### Documentation Deliverables
-
-- `README.md` updated.
-- `AGENTS.md` created and structurally verified.
-- `.cursor/rules/employee-task-manager.mdc` created and verified.
-- `docs/diagrams/architecture.mmd` created.
-- `docs/ARCHITECTURE.md` updated.
-- `docs/DEBUGGING_LOG.md` updated with Day 4 verification.
-- `docs/REQUIREMENTS.md` completed.
-- `docs/DEVELOPMENT_PLAN.md` completed.
-- `docs/DECISIONS.md` completed.
-- `docs/APPROVAL.md` completed.
-- `docs/CODEX_REVIEW.md` completed.
-- `docs/STORAGE_DESIGN.md` completed.
-- `docs/STORAGE_TECHNOLOGY_DECISION.md` completed.
-- `docs/TASK_MODEL.md` completed.
-
-### Day 4 Implementation
-
-- Task List UI implementation completed.
-- Home Screen navigation verified on Android device.
-- New tasks appear immediately after insertion.
-- Task completion updates task statistics.
-- Low, Medium, and High task priority selection and display implemented.
-- Priority-based task ordering implemented.
-- Delete Task feature implemented.
-- Delete confirmation dialog implemented.
-- Cancel operation preserves the task.
-- Confirmed deletion removes the task from Room Database.
-- Task list and dashboard statistics update after deletion.
-- Existing app functionality verified on device.
-
-### Day 4 Verification
-
-- Bug A – Home Screen navigation: PASS.
-- Bug B – Immediate task display: PASS.
-- Delete confirmation: PASS.
-- Delete cancellation: PASS.
-- Delete operation: PASS.
-- Dashboard statistics update: PASS.
-- Deleted task persistence after app restart: PASS.
-- Android resource processing: SUCCESSFUL.
-- Clean Debug APK build: SUCCESSFUL.
-- Debug APK installation on Xiaomi Redmi Note 8 Pro: SUCCESSFUL.
-- Final device verification: SUCCESSFUL.
-- Unit tests after removing incomplete Backup/Restore methods: 1 passed, 0 failed.
-- Added direct Room migration from original repository schema v1 to v4, retaining all existing rows and assigning existing tasks Medium priority.
-- Retained v3 to v4 migration for the intermediate development schema.
-- Removed destructive migration fallback so unknown schema versions cannot be silently wiped.
-- Added GitHub Actions Android CI workflow to run unit tests and build the Debug APK.
-- GitHub Actions Android CI run #14: SUCCESSFUL on commit `0a4baa74f97603ccd8f32e5649de9e6c2ecf7822`.
-- CI `testDebugUnitTest`: SUCCESSFUL.
-- CI `assembleDebug`: SUCCESSFUL.
-- Debug APK artifact upload: SUCCESSFUL.
-
-Note: Original root causes of Bug A and Bug B have not been conclusively established.
+### Day 4 - Task List Screen Only
+- Implemented the Task List screen UI.
+- Kept task creation, task list display, completion checkbox, Pending/Completed status, and empty state.
+- Kept the existing Home to Task List navigation.
+- Kept the existing local Room storage from the approved Day 3 plan.
+- Removed out-of-scope Priority, Delete, dashboard statistics, database migration additions, CI workflow, and Home Screen redesign.
 
 ## Next
-
-- Review any feedback on Pull Request #1.
-- Add and run automated Room migration tests for supported schema upgrade paths.
-- Obtain an independent review of Pull Request #1.
-- Keep the pull request open until review is complete and merge is explicitly approved.
+- Run a clean Debug APK build after this scope reduction.
+- Install and launch the rebuilt APK on the Android device.
+- Re-test the two Day 4 bug challenges with breakpoints:
+  - Button tap does nothing.
+  - Task list fails to display or update correctly.
+- Record the observed root causes and exact fixes after reproducing them.
+- Confirm the final APK, feature branch, PR, Codex review, and this status/debugging documentation.
 
 ## Blocked
-
-- No blocking implementation issue is currently reported.
-- Pull Request #1 is open and has not been merged.
+- Post-cleanup build and unit-test results are not yet available.
+- The exact root causes and debugger evidence for both Day 4 bug challenges are not yet documented.
+- The APK must be rebuilt from this cleaned branch before submission.
 
 ## Test Results
+- Earlier device checks on the wider implementation reported Home navigation and immediate task display working.
+- Earlier build/install and one unit test were reported successful before this scope reduction.
+- Those earlier results do not verify the cleaned branch.
+- Post-cleanup `assembleDebug`, `testDebugUnitTest`, device checks, and APK validation: PENDING.
 
-### Day 3 End-to-End Acceptance Criteria
-
-**12 / 12 PASS**
-
-1. App launches successfully - PASS.
-2. Home to Task Details navigation works - PASS.
-3. Task Details screen displays correctly - PASS.
-4. Empty-task state appears when there are no tasks - PASS.
-5. Valid task can be added - PASS.
-6. Empty task input is rejected - PASS.
-7. New task appears with Pending status - PASS.
-8. Pending task can be marked Completed - PASS.
-9. Completed status is displayed correctly - PASS.
-10. Repeated completion is handled safely - PASS.
-11. Task data persists after reopening the screen - PASS.
-12. Existing Day 1 and Day 2 functionality is preserved - PASS.
-
-### Build and Unit Test Results
-
-- Gradle Build after ViewModel architecture correction: SUCCESSFUL.
-- Unit Tests after Delete Task implementation and cleanup: 1 passed, 0 skipped, 0 failed.
-- KSP code generation: Verified.
-- AGENTS.md formatting verification: Passed.
-- Cursor rule frontmatter verification: Passed.
-- Final `clean assembleDebug`: SUCCESSFUL.
-- Final `installDebug`: SUCCESSFUL on the connected Android device.
-- `git diff --cached --check`: No whitespace errors reported.
-
-## Git Status
-
-- Active branch: `feature/task-list`.
-- Pull Request base commit on `main`: `9e2249e`.
-- First Day 4 implementation commit: `3eb3e7e`.
-- Day 4 feature implementation commit: `1fe3003`.
-- Remote branch: `origin/feature/task-list`.
-- Local working tree was verified clean and synchronized after the original Day 4 push; additional review-preparation commits have since been added directly to the remote feature branch and must be pulled locally.
-- Pull Request #1: [Day 4: Complete Task List with Priority and Delete Features](https://github.com/zaid-code-max/employee-task-manager/pull/1).
-- Pull Request base: `main`.
-- Pull Request compare branch: `feature/task-list`.
-- Pull Request status: Open, mergeable, and not merged.
+## Git / Delivery
+- Feature branch: `feature/task-list`.
+- Pull Request: #1, open and unmerged.
+- Required deliverables from the Day 4 slide: APK, feature branch, PR, Codex review, `DEBUGGING_LOG.md`, and `CURRENT_STATUS.md`.

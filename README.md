@@ -13,7 +13,7 @@ An Android application designed for managing employee tasks and workflow trackin
 * **Target / Compile SDK:** API 37
 * **Build System:** Gradle (Kotlin DSL `.gradle.kts`) with Version Catalog (`libs.versions.toml`)
 * **AGP Version:** 9.5.1
-* **Current Status:** Day 4 implementation complete; Pull Request #1 open for review.
+* **Current Status:** Day 3 Complete (12/12 Acceptance Criteria Verified)
 
 ---
 
@@ -35,9 +35,6 @@ Employees must be able to:
 * **Input Validation:** Prevents creation of empty tasks with user-friendly feedback (`Toast`).
 * **Empty-State Handling:** Clear empty-task state indication when no tasks exist.
 * **Task Status Tracking:** Dynamic color-coded status labels ("Pending" / "Completed") with CheckBox state synchronization.
-* **Task Priority:** Low, Medium, and High priority selection and priority-based task ordering.
-* **Task Deletion:** Delete action with a confirmation dialog; cancellation preserves the task.
-* **Live Dashboard Statistics:** Total, pending, and completed counts update when task data changes.
 
 ---
 
@@ -139,7 +136,7 @@ Employeetaskmanager/
 
 ### Prerequisites
 * **Android Studio:** Ladybug or newer recommended
-* **JDK:** JDK 17 or higher to run Gradle/Android Gradle Plugin (Java source compatibility remains Java 11)
+* **JDK:** Java 11 or higher
 * **Android SDK:** API 37 installed
 
 ### Command Line Build & Test Instructions (PowerShell)
@@ -167,24 +164,6 @@ Employeetaskmanager/
 
 ---
 
-## Day 4 Verification
-
-The following Day 4 checks were manually completed on a Xiaomi Redmi Note 8 Pro:
-
-- Home Screen navigation: PASS.
-- New task appears immediately after creation: PASS.
-- Task completion and dashboard statistics: PASS.
-- Low, Medium, and High priority selection and display: PASS.
-- Priority-based ordering: PASS.
-- Delete confirmation and cancel path: PASS.
-- Confirmed deletion and dashboard update: PASS.
-- Deleted task remains deleted after app restart: PASS.
-- Clean Debug APK build: PASS.
-- Debug APK installation: PASS.
-- Local unit tests: 1 passed, 0 failed.
-
-The Day 3 acceptance criteria below remain part of the regression baseline.
-
 ## Day 3 Acceptance Criteria Verification (12 / 12 PASS)
 
 1. App launches successfully — **PASS**
@@ -201,14 +180,6 @@ The Day 3 acceptance criteria below remain part of the regression baseline.
 12. No existing Day 1/Day 2 functionality broken — **PASS**
 
 ---
-
-## Pull Request and Release Notes
-
-- Pull Request: [#1 — Day 4: Complete Task List with Priority and Delete Features](https://github.com/zaid-code-max/employee-task-manager/pull/1)
-- Status: Open and awaiting review; not merged.
-- Android CI workflow: `.github/workflows/android-ci.yml` runs unit tests and builds the Debug APK for pull requests and pushes to `feature/task-list`.
-- Database migration: version 4 adds the priority column. The migration path from the original version 1 schema is defined explicitly; unrecognized schema versions must not be silently erased.
-- Before production release, add automated Room migration tests and verify any schema versions that may have existed in local, uncommitted builds.
 
 ## Troubleshooting & Setup Issues
 
