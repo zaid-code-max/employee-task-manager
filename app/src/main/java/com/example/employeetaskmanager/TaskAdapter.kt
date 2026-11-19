@@ -27,19 +27,31 @@ class TaskAdapter(
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val checkBox: CheckBox = itemView.findViewById(R.id.checkBoxTask)
         private val titleTextView: TextView = itemView.findViewById(R.id.textViewTaskTitle)
+        private val priorityTextView: TextView = itemView.findViewById(R.id.textViewTaskPriority)
         private val statusTextView: TextView = itemView.findViewById(R.id.textViewTaskStatus)
 
         fun bind(task: TaskEntity, onTaskCheckedChange: (TaskEntity, Boolean) -> Unit) {
             titleTextView.text = task.title
+            priorityTextView.text = task.priority
+
+            val context = itemView.context
+            when (task.priority) {
+                "High" -> priorityTextView.setTextColor(context.getColor(android.R.color.holo_red_dark))
+                "Low" -> priorityTextView.setTextColor(context.getColor(android.R.color.holo_green_dark))
+                else -> priorityTextView.setTextColor(context.getColor(android.R.color.holo_orange_dark))
+            }
+
             checkBox.setOnCheckedChangeListener(null)
             checkBox.isChecked = task.isCompleted
 
             if (task.isCompleted) {
-                statusTextView.text = itemView.context.getString(R.string.status_completed)
-                statusTextView.setTextColor(itemView.context.getColor(android.R.color.holo_green_dark))
+                statusTextView.text = context.getString(R.string.status_completed)
+                statusTextView.setTextColor(context.getColor(android.R.color.holo_green_dark))
+                checkBox.isEnabled = false // One-way completion: once checked, cannot uncheck
             } else {
-                statusTextView.text = itemView.context.getString(R.string.status_pending)
-                statusTextView.setTextColor(itemView.context.getColor(android.R.color.holo_orange_dark))
+                statusTextView.text = context.getString(R.string.status_pending)
+                statusTextView.setTextColor(context.getColor(android.R.color.holo_orange_dark))
+                checkBox.isEnabled = true
             }
 
             checkBox.setOnCheckedChangeListener { _, isChecked ->

@@ -15,10 +15,10 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
-    fun insertTask(title: String) {
+    fun insertTask(title: String, priority: String = "Medium") {
         if (title.isBlank()) return
         viewModelScope.launch {
-            repository.insertTask(TaskEntity(title = title.trim()))
+            repository.insertTask(TaskEntity(title = title.trim(), priority = priority))
         }
     }
 
