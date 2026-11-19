@@ -4,9 +4,6 @@
     <color name="card_dark">#1B2230</color>
     <color name="card_stroke">#2A3447</color>
     <color name="primary_indigo">#6475F5</color>
-    <color name="secondary_teal">#03DAC5</color>
-    <color name="status_amber">#F59E0B</color>
-    <color name="status_green">#10B981</color>
     <color name="text_white">#FFFFFF</color>
     <color name="text_muted">#94A3B8</color>
     <color name="purple_200">#FFBB86FC</color>
