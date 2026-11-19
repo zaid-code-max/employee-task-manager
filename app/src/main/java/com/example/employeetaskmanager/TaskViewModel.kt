@@ -11,20 +11,26 @@ class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     val allTasks: StateFlow<List<TaskEntity>> = repository.allTasks.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.Eagerly,
         initialValue = emptyList()
     )
 
-    fun insertTask(title: String) {
+    fun insertTask(title: String, priority: String = "Medium") {
         if (title.isBlank()) return
         viewModelScope.launch {
-            repository.insertTask(TaskEntity(title = title.trim()))
+            repository.insertTask(TaskEntity(title = title.trim(), priority = priority))
         }
     }
 
     fun updateTaskCompletion(taskId: Long, isCompleted: Boolean) {
         viewModelScope.launch {
             repository.updateTaskCompletion(taskId, isCompleted)
+        }
+    }
+
+    fun deleteTask(taskId: Long) {
+        viewModelScope.launch {
+            repository.deleteTask(taskId)
         }
     }
 }

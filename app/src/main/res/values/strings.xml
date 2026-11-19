@@ -32,4 +32,5 @@
     <string name="stats_pending_fmt">%d</string>
     <string name="stats_completed_fmt">%d</string>
     <string name="section_your_tasks">Your Tasks</string>
+    <string name="delete_task">Delete task</string>
 </resources>

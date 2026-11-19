@@ -100,3 +100,67 @@ The last reported verification results for these corrections were:
 - No unresolved implementation failure reported.
 
 Future issues should be added below with their date, symptoms, cause, resolution, and actual verification results.
+
+---
+
+## 4. Day 4 Runtime Verification and Delete Task
+
+**Date:** 18 November 2026
+
+**Category:** Application Testing / Task Management
+
+### Bug A: Home Screen Navigation
+
+**Reported Issue:** Open Task Manager button did not respond to taps.
+
+**Verification:**
+- Opened the application on the Android device.
+- Tapped the Open Task Manager button.
+- Task List screen opened successfully.
+
+**Root Cause:** Not conclusively established.
+
+**Result:** Current implementation verified successfully on the device.
+
+### Bug B: New Task Not Appearing Immediately
+
+**Reported Issue:** A newly added task did not appear until another existing task was marked Completed.
+
+**Verification:**
+- Opened the Task List screen.
+- Added a new task.
+- Verified that the new task appeared immediately.
+- No existing task completion or manual refresh was required.
+
+**Root Cause:** Not conclusively established.
+
+**Result:** Current implementation verified successfully on the device.
+
+### Delete Task Feature
+
+**Implementation:**
+- Added delete operation to TaskDao.
+- Connected deletion through TaskRepository.
+- Added deleteTask() to TaskViewModel.
+- Added Delete action to the task card.
+- Added confirmation dialog in TaskDetailsActivity.
+
+**Device Verification:**
+- Delete confirmation dialog: PASS.
+- Cancel operation: PASS.
+- Confirmed deletion: PASS.
+- Dashboard statistics update: PASS.
+- Deleted task remains deleted after app restart: PASS.
+
+### Build and Resource Verification
+
+- :app:processDebugResources: SUCCESSFUL.
+- assembleDebug: SUCCESSFUL.
+- Android device verification: Successful.
+
+### Unit Test Verification
+
+- Gradle task: `testDebugUnitTest`
+- Build result: SUCCESSFUL.
+- Unit Tests: 1 passed, 0 skipped, 0 failed.
+- Verification performed after removing incomplete Backup/Restore methods
