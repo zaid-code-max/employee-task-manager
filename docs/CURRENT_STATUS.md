@@ -26,7 +26,8 @@
 
 ## Blocked
 - Post-cleanup build and unit-test results are not yet available.
-- The exact root causes and debugger evidence for both Day 4 bug challenges are not yet documented.
+- Bug A source-level view-type mismatch was corrected; breakpoint confirmation and device retest are pending.
+- Bug B root cause and debugger evidence are not yet confirmed.
 - The APK must be rebuilt from this cleaned branch before submission.
 
 ## Test Results

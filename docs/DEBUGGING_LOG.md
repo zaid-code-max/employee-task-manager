@@ -65,13 +65,13 @@ The initial `TaskViewModel` implementation directly created `AppDatabase` and ac
 
 **Reported behavior:** A button tap does not trigger its intended action.
 
-**Inspection:** The Home navigation button already has a click listener in `MainActivity`. The Task List Add Task button also has a click listener in `TaskDetailsActivity`.
+**Inspection:** The Home navigation button has a click listener in `MainActivity`. In `activity_task_details.xml`, the empty-state view with ID `textViewEmptyState` is a `LinearLayout`, but the Activity previously requested it as a `TextView`.
 
-**Current finding:** The slide does not identify which button instance failed. The existing device notes reported that Home to Task List navigation worked, but a breakpoint trace and a reproduced failure were not captured in the available evidence.
+**Source-level root cause:** The invalid `TextView` cast can throw a `ClassCastException` during `TaskDetailsActivity.onCreate()`. This can make the Home button appear unresponsive because navigation starts the Activity but the destination crashes while being created.
 
-**Root cause:** Not yet confirmed.
+**Fix applied:** Changed the lookup to `findViewById<View>(R.id.textViewEmptyState)`, matching the actual container type. The Home navigation click listener itself was preserved.
 
-**Fix / retest:** No speculative code change has been made to the Home navigation handler. Reproduce the exact failing button, inspect its view ID/listener with a breakpoint, then record and retest the verified fix.
+**Retest:** A runtime stack trace / breakpoint confirmation and device retest after the scope cleanup are still pending.
 
 ### Bug B — Task list fails to display or update correctly
 

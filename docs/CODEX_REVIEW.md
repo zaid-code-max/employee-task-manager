@@ -39,7 +39,7 @@
 - Task data model, DAO, Repository, and Room schema remain unchanged from the approved Day 3 baseline.
 
 ### Review Findings / Remaining Validation
-- The exact button involved in Bug A and its debugger trace are not yet captured.
+- Bug A source-level root cause identified: the empty-state LinearLayout was previously cast to TextView, which can crash TaskDetailsActivity during creation; the Activity now retrieves it as View. Breakpoint/runtime confirmation and device retest remain pending.
 - The original root cause for Bug B is not yet proven by a breakpoint trace.
 - A clean build, unit-test run, and device retest are still required after this scope reduction.
 
