@@ -74,14 +74,18 @@ The ViewModel receives the Repository through constructor injection. The Factory
 - Retained v3 to v4 migration for the intermediate development schema.
 - Removed destructive migration fallback so unknown schema versions cannot be silently wiped.
 - Added GitHub Actions Android CI workflow to run unit tests and build the Debug APK.
-- CI for the new workflow has not yet been verified in GitHub Actions.
+- GitHub Actions Android CI run #14: SUCCESSFUL on commit `0a4baa74f97603ccd8f32e5649de9e6c2ecf7822`.
+- CI `testDebugUnitTest`: SUCCESSFUL.
+- CI `assembleDebug`: SUCCESSFUL.
+- Debug APK artifact upload: SUCCESSFUL.
 
 Note: Original root causes of Bug A and Bug B have not been conclusively established.
 
 ## Next
 
 - Review any feedback on Pull Request #1.
-- Verify the new GitHub Actions workflow run and add Room migration tests.
+- Add and run automated Room migration tests for supported schema upgrade paths.
+- Obtain an independent review of Pull Request #1.
 - Keep the pull request open until review is complete and merge is explicitly approved.
 
 ## Blocked
