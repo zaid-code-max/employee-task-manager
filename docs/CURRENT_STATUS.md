@@ -117,8 +117,9 @@ Note: Original root causes of Bug A and Bug B have not been conclusively establi
 ## Git Status
 
 - Active branch: `feature/task-list`.
-- Day 4 base commit: `3eb3e7e`.
-- Day 4 implementation commit: `1fe3003`.
+- Pull Request base commit on `main`: `9e2249e`.
+- First Day 4 implementation commit: `3eb3e7e`.
+- Day 4 feature implementation commit: `1fe3003`.
 - Remote branch: `origin/feature/task-list`.
 - Local working tree was verified clean and synchronized with the remote branch after the Day 4 push.
 - Pull Request #1: [Day 4: Complete Task List with Priority and Delete Features](https://github.com/zaid-code-max/employee-task-manager/pull/1).
