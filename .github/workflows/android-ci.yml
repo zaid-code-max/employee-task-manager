@@ -40,8 +40,16 @@ jobs:
         run: |
           sdkmanager --channel=3 "platforms;android-37.0" "build-tools;36.0.0"
 
-      - name: Run unit tests and build Debug APK
-        run: bash ./gradlew --no-daemon clean testDebugUnitTest assembleDebug
+      - name: Run lint, unit tests and build Debug APK
+        run: bash ./gradlew --no-daemon clean lintDebug testDebugUnitTest assembleDebug
+
+      - name: Run Room migration instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          disable-animations: true
+          script: bash ./gradlew --no-daemon connectedDebugAndroidTest
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v7
