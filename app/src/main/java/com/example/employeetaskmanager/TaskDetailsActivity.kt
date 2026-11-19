@@ -39,6 +39,10 @@ class TaskDetailsActivity : AppCompatActivity() {
         val textViewCompletedCount = findViewById<TextView>(R.id.textViewCompletedCount)
         val textViewTaskCountBadge = findViewById<TextView>(R.id.textViewTaskCountBadge)
 
+        val btnFilterAll = findViewById<Button>(R.id.btnFilterAll)
+        val btnFilterPending = findViewById<Button>(R.id.btnFilterPending)
+        val btnFilterCompleted = findViewById<Button>(R.id.btnFilterCompleted)
+
         val priorities = arrayOf("Low", "Medium", "High")
         val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, priorities)
         spinnerPriority.adapter = spinnerAdapter
@@ -64,6 +68,37 @@ class TaskDetailsActivity : AppCompatActivity() {
         recyclerViewTasks.layoutManager = LinearLayoutManager(this)
         recyclerViewTasks.adapter = taskAdapter
 
+        fun updateFilterButtons(selected: TaskFilter) {
+            val activeColor = getColor(R.color.primary_indigo)
+            val inactiveColor = getColor(R.color.card_dark)
+            val activeText = getColor(R.color.text_white)
+            val inactiveText = getColor(R.color.text_muted)
+
+            btnFilterAll.backgroundTintList = android.content.res.ColorStateList.valueOf(if (selected == TaskFilter.ALL) activeColor else inactiveColor)
+            btnFilterAll.setTextColor(if (selected == TaskFilter.ALL) activeText else inactiveText)
+
+            btnFilterPending.backgroundTintList = android.content.res.ColorStateList.valueOf(if (selected == TaskFilter.PENDING) activeColor else inactiveColor)
+            btnFilterPending.setTextColor(if (selected == TaskFilter.PENDING) activeText else inactiveText)
+
+            btnFilterCompleted.backgroundTintList = android.content.res.ColorStateList.valueOf(if (selected == TaskFilter.COMPLETED) activeColor else inactiveColor)
+            btnFilterCompleted.setTextColor(if (selected == TaskFilter.COMPLETED) activeText else inactiveText)
+        }
+
+        btnFilterAll.setOnClickListener {
+            viewModel.setFilter(TaskFilter.ALL)
+            updateFilterButtons(TaskFilter.ALL)
+        }
+
+        btnFilterPending.setOnClickListener {
+            viewModel.setFilter(TaskFilter.PENDING)
+            updateFilterButtons(TaskFilter.PENDING)
+        }
+
+        btnFilterCompleted.setOnClickListener {
+            viewModel.setFilter(TaskFilter.COMPLETED)
+            updateFilterButtons(TaskFilter.COMPLETED)
+        }
+
         buttonAddTask.setOnClickListener {
             val title = editTextTaskTitle.text.toString()
             val priority = spinnerPriority.selectedItem.toString()
@@ -78,24 +113,32 @@ class TaskDetailsActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.allTasks.collect { tasks ->
-                    taskAdapter.submitList(tasks)
+                // Collect total tasks for statistics counts
+                launch {
+                    viewModel.allTasks.collect { tasks ->
+                        val total = tasks.size
+                        val completed = tasks.count { it.isCompleted }
+                        val pending = total - completed
 
-                    val total = tasks.size
-                    val completed = tasks.count { it.isCompleted }
-                    val pending = total - completed
+                        textViewTotalCount.text = total.toString()
+                        textViewPendingCount.text = pending.toString()
+                        textViewCompletedCount.text = completed.toString()
+                        textViewTaskCountBadge.text = "$total tasks"
+                    }
+                }
 
-                    textViewTotalCount.text = total.toString()
-                    textViewPendingCount.text = pending.toString()
-                    textViewCompletedCount.text = completed.toString()
-                    textViewTaskCountBadge.text = "$total tasks"
+                // Collect filtered tasks for the RecyclerView
+                launch {
+                    viewModel.filteredTasks.collect { tasks ->
+                        taskAdapter.submitList(tasks)
 
-                    if (tasks.isEmpty()) {
-                        recyclerViewTasks.visibility = View.GONE
-                        textViewEmptyState.visibility = View.VISIBLE
-                    } else {
-                        recyclerViewTasks.visibility = View.VISIBLE
-                        textViewEmptyState.visibility = View.GONE
+                        if (tasks.isEmpty()) {
+                            recyclerViewTasks.visibility = View.GONE
+                            textViewEmptyState.visibility = View.VISIBLE
+                        } else {
+                            recyclerViewTasks.visibility = View.VISIBLE
+                            textViewEmptyState.visibility = View.GONE
+                        }
                     }
                 }
             }
