@@ -4,13 +4,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
 class TaskAdapter(
-    private val onTaskCheckedChange: (TaskEntity, Boolean) -> Unit
+    private val onTaskCheckedChange: (TaskEntity, Boolean) -> Unit,
+    private val onTaskDeleted: (TaskEntity) -> Unit
 ) : ListAdapter<TaskEntity, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
@@ -21,7 +23,7 @@ class TaskAdapter(
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = getItem(position)
-        holder.bind(task, onTaskCheckedChange)
+        holder.bind(task, onTaskCheckedChange, onTaskDeleted)
     }
 
     class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -29,8 +31,13 @@ class TaskAdapter(
         private val titleTextView: TextView = itemView.findViewById(R.id.textViewTaskTitle)
         private val priorityTextView: TextView = itemView.findViewById(R.id.textViewTaskPriority)
         private val statusTextView: TextView = itemView.findViewById(R.id.textViewTaskStatus)
+        private val deleteImageView: ImageView = itemView.findViewById(R.id.imageViewDelete)
 
-        fun bind(task: TaskEntity, onTaskCheckedChange: (TaskEntity, Boolean) -> Unit) {
+        fun bind(
+            task: TaskEntity,
+            onTaskCheckedChange: (TaskEntity, Boolean) -> Unit,
+            onTaskDeleted: (TaskEntity) -> Unit
+        ) {
             titleTextView.text = task.title
             priorityTextView.text = task.priority
 
@@ -58,6 +65,10 @@ class TaskAdapter(
                 if (task.isCompleted != isChecked) {
                     onTaskCheckedChange(task, isChecked)
                 }
+            }
+
+            deleteImageView.setOnClickListener {
+                onTaskDeleted(task)
             }
         }
     }

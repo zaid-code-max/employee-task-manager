@@ -9,6 +9,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -42,9 +43,22 @@ class TaskDetailsActivity : AppCompatActivity() {
         spinnerPriority.adapter = spinnerAdapter
         spinnerPriority.setSelection(1) // Default to Medium
 
-        taskAdapter = TaskAdapter { task, isCompleted ->
-            viewModel.updateTaskCompletion(task.id, isCompleted)
-        }
+        taskAdapter = TaskAdapter(
+            onTaskCheckedChange = { task, isCompleted ->
+                viewModel.updateTaskCompletion(task.id, isCompleted)
+            },
+            onTaskDeleted = { task ->
+                AlertDialog.Builder(this)
+                    .setTitle("Delete Task")
+                    .setMessage("Are you sure you want to delete \"${task.title}\"?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        viewModel.deleteTask(task.id)
+                        Toast.makeText(this, "Task deleted", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        )
 
         recyclerViewTasks.layoutManager = LinearLayoutManager(this)
         recyclerViewTasks.adapter = taskAdapter
@@ -70,9 +84,9 @@ class TaskDetailsActivity : AppCompatActivity() {
                     val completed = tasks.count { it.isCompleted }
                     val pending = total - completed
 
-                    textViewTotalCount.text = getString(R.string.stats_total_fmt, total)
-                    textViewPendingCount.text = getString(R.string.stats_pending_fmt, pending)
-                    textViewCompletedCount.text = getString(R.string.stats_completed_fmt, completed)
+                    textViewTotalCount.text = total.toString()
+                    textViewPendingCount.text = pending.toString()
+                    textViewCompletedCount.text = completed.toString()
 
                     if (tasks.isEmpty()) {
                         recyclerViewTasks.visibility = View.GONE
