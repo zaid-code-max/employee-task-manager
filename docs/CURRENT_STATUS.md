@@ -15,27 +15,22 @@
 - Kept the existing local Room storage from the approved Day 3 plan.
 - Removed out-of-scope Priority, Delete, dashboard statistics, database migration additions, CI workflow, and Home Screen redesign.
 
-## Next
-- Run a clean Debug APK build after this scope reduction.
-- Install and launch the rebuilt APK on the Android device.
-- Re-test the two Day 4 bug challenges with breakpoints:
-  - Button tap does nothing.
-  - Task list fails to display or update correctly.
-- Record the observed root causes and exact fixes after reproducing them.
-- Confirm the final APK, feature branch, PR, Codex review, and this status/debugging documentation.
+## Completed Verification
 
-## Blocked
-- Post-cleanup build and unit-test results are not yet available.
-- Bug A source-level view-type mismatch was corrected; breakpoint confirmation and device retest are pending.
-- Bug B root cause and debugger evidence are not yet confirmed.
-- The APK must be rebuilt from this cleaned branch before submission.
+- `.\gradlew.bat clean assembleDebug` - BUILD SUCCESSFUL.
+- `.\gradlew.bat testDebugUnitTest` - BUILD SUCCESSFUL.
+- `.\gradlew.bat installDebug` - BUILD SUCCESSFUL.
+- APK installed on connected device `CPH1877 - 10`.
+- User confirmed that the app is working after installation.
+- README build command `.\gradlew.bat :app:assembleDebug` - BUILD SUCCESSFUL.
 
-## Test Results
-- Earlier device checks on the wider implementation reported Home navigation and immediate task display working.
-- Earlier build/install and one unit test were reported successful before this scope reduction.
-- Those earlier results do not verify the cleaned branch.
-- Post-cleanup `assembleDebug`, `testDebugUnitTest`, device checks, and APK validation: PENDING.
+## Remaining
 
+- Capture terminal screenshots showing successful build, unit-test, and installation commands.
+- Capture breakpoint and Logcat evidence for the Day 4 controlled bug challenges.
+- Bug A breakpoint confirmation and specific runtime retest remain pending.
+- Bug B root cause remains unconfirmed. Inspect the task Flow and adapter submission with breakpoints before claiming a confirmed fix.
+- Complete the final evidence review before submission.
 ## Git / Delivery
 - Feature branch: `feature/task-list`.
 - Pull Request: #1, open and unmerged.

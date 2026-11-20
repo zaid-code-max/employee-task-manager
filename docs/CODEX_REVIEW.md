@@ -39,11 +39,26 @@
 - Task data model, DAO, Repository, and Room schema remain unchanged from the approved Day 3 baseline.
 
 ### Review Findings / Remaining Validation
-- Bug A source-level root cause identified: the empty-state LinearLayout was previously cast to TextView, which can crash TaskDetailsActivity during creation; the Activity now retrieves it as View. Breakpoint/runtime confirmation and device retest remain pending.
-- The original root cause for Bug B is not yet proven by a breakpoint trace.
-- A clean build, unit-test run, and device retest are still required after this scope reduction.
+
+- Static scope and source-code inspection: Completed.
+- Clean Debug APK build after scope cleanup: Successful.
+- Unit tests using `testDebugUnitTest`: Successful.
+- Debug APK installation: Successful on device `CPH1877 - 10`.
+- User confirmed that the app is working after installation.
+- Bug A source-level root cause was identified: the empty-state `LinearLayout` was previously retrieved as a `TextView`. The Activity now retrieves it as `View`. Breakpoint confirmation and a specific runtime retest remain pending.
+- Bug B root cause is not yet proven by a breakpoint trace. The Flow collection change is retained as a correction attempt, not a confirmed root-cause fix.
+- Terminal verification screenshots and controlled-bug debugging evidence remain to be captured.
 
 ### Review Outcome
+
 **Static scope/code inspection:** Completed.
 
-**Runtime acceptance:** Pending. Do not treat this review as proof that the cleaned APK has passed build or device testing.
+**Post-cleanup build:** Passed.
+
+**Unit-test run:** Passed.
+
+**Device installation:** Passed.
+
+**App working check:** Confirmed by the user.
+
+**Controlled Bug A/B debugging proof:** Pending. Do not claim both controlled bugs have been fully reproduced and verified.

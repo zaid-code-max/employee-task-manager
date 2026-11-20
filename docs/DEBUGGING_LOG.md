@@ -86,7 +86,17 @@ The initial `TaskViewModel` implementation directly created `AppDatabase` and ac
 **Fix / retest:** The Flow collection change is retained as the current correction attempt. Reproduce the original issue, inspect the emitted task list and adapter submission with breakpoints, and verify add/completion updates after this scope reduction.
 
 ### Post-cleanup verification
-- Clean Debug APK build: Pending.
-- Unit tests: Pending.
-- Device retest for Bug A: Pending.
-- Device retest for Bug B: Pending.
+
+**Date:** 20 November 2026
+
+- Clean Debug APK build (`.\gradlew.bat clean assembleDebug`): Successful.
+- Unit tests (`.\gradlew.bat testDebugUnitTest`): Successful.
+- Device installation (`.\gradlew.bat installDebug`): Successful.
+- Connected device reported by Gradle: `CPH1877 - 10`.
+- User confirmed that the app is working after installation.
+
+### Remaining debugging evidence
+
+- Bug A: The source-level view-type mismatch was corrected. Breakpoint confirmation and a specific runtime reproduction/retest are not yet documented.
+- Bug B: The original root cause is not confirmed. `SharingStarted.Eagerly` remains a correction attempt; inspect the emitted task list and adapter submission with breakpoints.
+- Terminal screenshots of the post-cleanup build, unit-test, and installation results still need to be captured.
