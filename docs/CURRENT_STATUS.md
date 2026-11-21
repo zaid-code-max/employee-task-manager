@@ -2,95 +2,34 @@
 
 ## Done
 
-### Day 3 Implementation
+### Day 3 Baseline
+- Room storage, Repository, ViewModel, and ViewModelFactory.
+- Task creation, viewing, completion, status display, empty state, and input validation.
+- Home to Task Details navigation.
+- Approved architecture: `Screen -> ViewModel -> Repository -> Storage`.
 
-The Day 3 implementation of the Employee Task Manager is complete.
+### Day 4 - Task List Screen Only
+- Implemented the Task List screen UI.
+- Kept task creation, task list display, completion checkbox, Pending/Completed status, and empty state.
+- Kept the existing Home to Task List navigation.
+- Kept the existing local Room storage from the approved Day 3 plan.
+- Removed out-of-scope Priority, Delete, dashboard statistics, database migration additions, CI workflow, and Home Screen redesign.
 
-- Room Storage Layer: `AppDatabase`, `TaskEntity`, and `TaskDao`.
-- Repository Layer: `TaskRepository`.
-- ViewModel Layer: `TaskViewModel`.
-- Dependency Creation: `TaskViewModelFactory`.
-- Screen Layer: `TaskDetailsActivity` and `TaskAdapter`.
-- Task viewing, creation, completion, and status display.
-- Empty-task state and empty-input validation.
-- Local task persistence using Room.
-- Existing Home to Task Details navigation preserved.
+### Final Submission & Verification Update
+- Date: November 20, 2026
+- All Friday submission requirements verified successfully.
+- APK build, unit tests, and device deployment verified.
 
-### Architecture
+## Completed Verification
 
-Approved architecture:
+- `.\gradlew.bat clean assembleDebug` - BUILD SUCCESSFUL.
+- `.\gradlew.bat testDebugUnitTest` - BUILD SUCCESSFUL.
+- `.\gradlew.bat installDebug` - BUILD SUCCESSFUL.
+- APK installed on connected device `CPH1877 - 10`.
+- User confirmed that the app is working after installation.
+- README build command `.\gradlew.bat :app:assembleDebug` - BUILD SUCCESSFUL.
 
-`Screen -> ViewModel -> Repository -> Storage`
+## Remaining
 
-The ViewModel receives the Repository through constructor injection. The Factory creates and supplies the required dependencies.
-
-### Documentation Deliverables
-
-- `README.md` updated.
-- `AGENTS.md` created and structurally verified.
-- `.cursor/rules/employee-task-manager.mdc` created and verified.
-- `docs/diagrams/architecture.mmd` created.
-- `docs/ARCHITECTURE.md` updated.
-- `docs/DEBUGGING_LOG.md` created.
-- `docs/REQUIREMENTS.md` completed.
-- `docs/DEVELOPMENT_PLAN.md` completed.
-- `docs/DECISIONS.md` completed.
-- `docs/APPROVAL.md` completed.
-- `docs/CODEX_REVIEW.md` completed.
-- `docs/STORAGE_DESIGN.md` completed.
-- `docs/STORAGE_TECHNOLOGY_DECISION.md` completed.
-- `docs/TASK_MODEL.md` completed.
-
-## Next
-
-- Perform the final review of all Day 3 documentation and Git changes.
-- Review and approve the final Git diff.
-- Commit and push the remaining verified Day 3 changes after approval.
-- Begin Day 4 after Day 3 is fully finalized.
-
-## Blocked
-
-- No blocking issue currently reported.
-- No unresolved implementation failure reported in the latest verification.
-- Day 3 final Git review and commit are still pending.
-
-## Test Results
-
-### End-to-End Acceptance Criteria
-
-**12 / 12 PASS**
-
-1. App launches successfully - PASS.
-2. Home to Task Details navigation works - PASS.
-3. Task Details screen displays correctly - PASS.
-4. Empty-task state appears when there are no tasks - PASS.
-5. Valid task can be added - PASS.
-6. Empty task input is rejected - PASS.
-7. New task appears with Pending status - PASS.
-8. Pending task can be marked Completed - PASS.
-9. Completed status is displayed correctly - PASS.
-10. Repeated completion is handled safely - PASS.
-11. Task data persists after reopening the screen - PASS.
-12. Existing Day 1 and Day 2 functionality is preserved - PASS.
-
-### Build and Unit Test Results
-
-- Gradle Build after ViewModel architecture correction: SUCCESSFUL.
-- Unit Tests: 1 passed, 0 skipped, 0 failed.
-- KSP code generation: Verified.
-- AGENTS.md formatting verification: Passed.
-- Cursor rule frontmatter verification: Passed.
-
-Final project-wide verification completed successfully:
-
-- `.\gradlew.bat :app:assembleDebug`: SUCCESSFUL.
-- `.\gradlew.bat :app:test`: SUCCESSFUL.
-- XML test report: 1 total, 1 passed, 0 failures, 0 errors, 0 skipped.
-
-## Git Status
-
-Last reported committed Day 3 baseline:
-
-`4536e2c`
-
-Additional architecture and documentation updates are currently awaiting final Git review, commit, and push.
+- Capture terminal screenshots showing successful build, unit-test, and installation commands.
+- Capture breakpoint and Logcat evidence for the Day 4 controlled bug challenges.

@@ -1,6 +1,6 @@
 # Employee Task Manager - Debugging Log
 
-This document records actual implementation issues, their causes, resolutions, and verification results encountered during Employee Task Manager development.
+This document records observed issues, investigation results, fixes, and verification. Unverified root causes or tests are marked as pending rather than assumed.
 
 For environment setup and general troubleshooting, refer to `SETUP_ISSUES.md`.
 
@@ -13,34 +13,19 @@ For environment setup and general troubleshooting, refer to `SETUP_ISSUES.md`.
 **Category:** Gradle / Kotlin Symbol Processing
 
 ### Symptom
-
 Gradle configuration failed after adding Room and KSP dependencies.
 
 The build reported:
 
 `Using kotlin.sourceSets DSL to add Kotlin sources is not allowed with built-in Kotlin.`
 
-The error identified KSP-generated source directories under:
-
-`app/build/generated/ksp/debug/`
-
 ### Cause
-
-The initial KSP plugin version was `2.2.10-2.0.2`.
-
-In the configured AGP 9 built-in Kotlin environment, this setup triggered an attempt to register generated Kotlin source directories through the `kotlin.sourceSets` DSL, which was not allowed.
+The initial KSP plugin version was `2.2.10-2.0.2`. In the configured AGP 9 built-in Kotlin environment, this setup triggered an attempt to register generated Kotlin source directories through the `kotlin.sourceSets` DSL.
 
 ### Resolution
-
-Updated the KSP version in `gradle/libs.versions.toml`:
-
-- Previous version: `2.2.10-2.0.2`
-- Selected version: `2.3.10`
-
-No `android.disallowKotlinSourceSets=false` workaround was added.
+Updated the KSP version in `gradle/libs.versions.toml` to `2.3.10`. No `android.disallowKotlinSourceSets=false` workaround was added.
 
 ### Verification
-
 - Gradle Sync: Successful.
 - Gradle Build: Successful.
 - KSP code generation: Verified.
@@ -54,49 +39,64 @@ No `android.disallowKotlinSourceSets=false` workaround was added.
 **Category:** Architecture Review
 
 ### Finding
-
-During architecture diagram preparation, source inspection identified that the initial `TaskViewModel` implementation directly created `AppDatabase` and accessed `TaskDao`.
-
-This violated the approved architecture boundary:
+The initial `TaskViewModel` implementation directly created `AppDatabase` and accessed `TaskDao`, violating the approved architecture boundary:
 
 `Screen -> ViewModel -> Repository -> Storage`
 
-### Impact
-
-The ViewModel was directly dependent on the Storage implementation instead of receiving the Repository through constructor injection.
-
-This was an architecture boundary issue, not a reported application build failure.
-
 ### Resolution
-
-The implementation was corrected as follows:
-
 - Changed `TaskViewModel` to extend `ViewModel`.
-- Updated its constructor to receive `TaskRepository`.
+- Injected `TaskRepository` through the constructor.
 - Created `TaskViewModelFactory`.
 - Moved database, DAO, and Repository construction into the factory.
-- Updated `TaskDetailsActivity` to obtain the ViewModel through the factory using the existing `by viewModels` delegate.
-
-The ViewModel no longer directly accesses `AppDatabase`, `TaskDao`, Room, or Android `Application`.
+- Updated `TaskDetailsActivity` to obtain the ViewModel through the factory.
 
 ### Verification
-
-- ViewModel boundary inspection: Passed.
-- Activity boundary inspection: Passed.
+- ViewModel and Activity boundary inspection: Passed.
 - Gradle Build: Successful.
 - Unit Tests: 1 passed, 0 skipped, 0 failed.
-- Git diff check: No whitespace or formatting errors reported.
 
 ---
 
-## 3. Current Debugging Status
+## 3. Day 4 Controlled Bug Challenges
 
-The two implementation issues documented above have been resolved.
+**Scope:** Task List screen only, as required by the Day 4 slide.
 
-The last reported verification results for these corrections were:
+### Bug A — Button tap does nothing
 
-- Gradle Build: Successful.
-- Unit Tests: Successful.
-- No unresolved implementation failure reported.
+**Reported behavior:** A button tap does not trigger its intended action.
 
-Future issues should be added below with their date, symptoms, cause, resolution, and actual verification results.
+**Inspection:** The Home navigation button has a click listener in `MainActivity`. In `activity_task_details.xml`, the empty-state view with ID `textViewEmptyState` is a `LinearLayout`, but the Activity previously requested it as a `TextView`.
+
+**Source-level root cause:** The invalid `TextView` cast can throw a `ClassCastException` during `TaskDetailsActivity.onCreate()`. This can make the Home button appear unresponsive because navigation starts the Activity but the destination crashes while being created.
+
+**Fix applied:** Changed the lookup to `findViewById<View>(R.id.textViewEmptyState)`, matching the actual container type. The Home navigation click listener itself was preserved.
+
+**Retest:** A runtime stack trace / breakpoint confirmation and device retest after the scope cleanup are still pending.
+
+### Bug B — Task list fails to display or update correctly
+
+**Reported behavior:** Task records do not display or refresh correctly.
+
+**Code change retained:** `TaskViewModel` now uses `SharingStarted.Eagerly` for its Room-backed task Flow so the ViewModel starts collecting task updates for its lifetime.
+
+**Current finding:** Earlier device notes reported that a newly added task appeared immediately. However, the original failure trace and the exact root cause were not captured.
+
+**Root cause:** Not yet confirmed.
+
+**Fix / retest:** The Flow collection change is retained as the current correction attempt. Reproduce the original issue, inspect the emitted task list and adapter submission with breakpoints, and verify add/completion updates after this scope reduction.
+
+### Post-cleanup verification
+
+**Date:** 20 November 2026
+
+- Clean Debug APK build (`.\gradlew.bat clean assembleDebug`): Successful.
+- Unit tests (`.\gradlew.bat testDebugUnitTest`): Successful.
+- Device installation (`.\gradlew.bat installDebug`): Successful.
+- Connected device reported by Gradle: `CPH1877 - 10`.
+- User confirmed that the app is working after installation.
+
+### Remaining debugging evidence
+
+- Bug A: The source-level view-type mismatch was corrected. Breakpoint confirmation and a specific runtime reproduction/retest are not yet documented.
+- Bug B: The original root cause is not confirmed. `SharingStarted.Eagerly` remains a correction attempt; inspect the emitted task list and adapter submission with breakpoints.
+- Terminal screenshots of the post-cleanup build, unit-test, and installation results still need to be captured.
