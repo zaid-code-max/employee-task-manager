@@ -2,6 +2,11 @@
 
 ## Done
 
+### Day 6 Integration & Main Branch Merge
+- Successfully merged `feature/task-list` into `main`.
+- All Day 1–4 features (Room persistence, Task Priority, Delete Task, One-Way Completion, Filter Tabs) are now live on the main branch repository.
+- Verified all builds, unit tests, and device deployment.
+
 ### Day 3 Baseline
 - Room storage, Repository, ViewModel, and ViewModelFactory.
 - Task creation, viewing, completion, status display, empty state, and input validation.
@@ -30,6 +35,4 @@
 - README build command `.\gradlew.bat :app:assembleDebug` - BUILD SUCCESSFUL.
 
 ## Remaining
-
-- Capture terminal screenshots showing successful build, unit-test, and installation commands.
-- Capture breakpoint and Logcat evidence for the Day 4 controlled bug challenges.
+- Project delivery complete.
