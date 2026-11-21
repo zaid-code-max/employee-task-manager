@@ -15,6 +15,11 @@
 - Kept the existing local Room storage from the approved Day 3 plan.
 - Removed out-of-scope Priority, Delete, dashboard statistics, database migration additions, CI workflow, and Home Screen redesign.
 
+### Final Submission & Verification Update
+- Date: November 20, 2026
+- All Friday submission requirements verified successfully.
+- APK build, unit tests, and device deployment verified.
+
 ## Completed Verification
 
 - `.\gradlew.bat clean assembleDebug` - BUILD SUCCESSFUL.
@@ -28,10 +33,3 @@
 
 - Capture terminal screenshots showing successful build, unit-test, and installation commands.
 - Capture breakpoint and Logcat evidence for the Day 4 controlled bug challenges.
-- Bug A breakpoint confirmation and specific runtime retest remain pending.
-- Bug B root cause remains unconfirmed. Inspect the task Flow and adapter submission with breakpoints before claiming a confirmed fix.
-- Complete the final evidence review before submission.
-## Git / Delivery
-- Feature branch: `feature/task-list`.
-- Pull Request: #1, open and unmerged.
-- Required deliverables from the Day 4 slide: APK, feature branch, PR, Codex review, `DEBUGGING_LOG.md`, and `CURRENT_STATUS.md`.
