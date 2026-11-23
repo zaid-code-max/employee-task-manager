@@ -1,6 +1,6 @@
 # Employee Task Manager
 
-An Android application designed for managing employee tasks and workflow tracking, built following modern Android architecture guidelines (MVVM & Clean Architecture with Room persistence).
+An Android application for managing employee tasks, built with MVVM and a repository boundary over Room. There is no separate domain or use-case layer.
 
 ---
 
@@ -12,8 +12,8 @@ An Android application designed for managing employee tasks and workflow trackin
 * **Minimum SDK:** API 24 (Android 7.0 Nougat)
 * **Target / Compile SDK:** API 37
 * **Build System:** Gradle (Kotlin DSL `.gradle.kts`) with Version Catalog (`libs.versions.toml`)
-* **AGP Version:** 9.5.1
-* **Current Status:** Day 3 Complete (12/12 Acceptance Criteria Verified)
+* **AGP Version:** 9.5.2
+* **Current behavior:** Room persistence, task priority, delete with confirmation, All / Pending / Completed filters, dashboard total / pending / completed counts, and one-way completion are implemented. The Day 3 checklist below is a historical acceptance record, not the full current feature list.
 
 ---
 
@@ -25,33 +25,81 @@ Employees must be able to:
 3. **Mark Complete:** Mark pending tasks as completed.
 4. **View Status:** See whether a task is in "Pending" or "Completed" status.
 
+Priority, delete, filters, dashboard counts, and one-way completion are implemented in the source in addition to those four requests. They are existing behavior, not a change to the original business request.
+
+---
+
+## Task Model
+
+`TaskEntity` maps to the Room table `tasks`:
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | `Long` | Auto-generated primary key, default `0L` |
+| `title` | `String` | Task text. Blank titles are rejected |
+| `isCompleted` | `Boolean` | Default `false`. `false` is Pending. `true` is Completed |
+| `priority` | `String` | Default `"Medium"`. The spinner offers Low, Medium, and High |
+
+`AppDatabase` is the singleton database `task_database`, version 4, with `exportSchema = false` and `fallbackToDestructiveMigration(true)`.
+
 ---
 
 ## Implemented Features
 
-* **Task Management Dashboard:** Dedicated Task Details screen supporting viewing, adding, and managing tasks.
-* **Room Local Persistence:** SQLite database persistence (`AppDatabase`, `TaskEntity`, `TaskDao`) ensuring task data survives activity lifecycle changes and app restarts.
-* **Reactive MVVM Architecture:** `TaskViewModel` observing `TaskRepository` data streams (`StateFlow`) using Kotlin Coroutines.
-* **Input Validation:** Prevents creation of empty tasks with user-friendly feedback (`Toast`).
-* **Empty-State Handling:** Clear empty-task state indication when no tasks exist.
-* **Task Status Tracking:** Dynamic color-coded status labels ("Pending" / "Completed") with CheckBox state synchronization.
+* **Home navigation:** `MainActivity` starts `TaskDetailsActivity` with an explicit `Intent`. `MainActivity` has no ViewModel.
+* **Task list:** `TaskDetailsActivity` shows tasks from `filteredTasks` through `TaskAdapter`.
+* **Room local persistence:** `AppDatabase`, `TaskEntity`, and `TaskDao` keep tasks across screen changes and process restarts, subject to destructive migration on an older schema.
+* **Add task:** The screen rejects a blank title with `R.string.error_empty_title`. `TaskViewModel.insertTask` trims the title and returns without inserting when the result is blank. New tasks start pending.
+* **Priority:** Spinner values are Low, Medium, and High, starting on Medium. The DAO orders High, then Medium, then Low, then any other value, then pending before completed, then `id DESC`.
+* **One-way completion:** `TaskAdapter` disables the checkbox after a task is completed, so the list cannot uncheck it. `TaskDao.updateTaskCompletion` still writes the Boolean it receives.
+* **Status:** Pending and Completed come only from `isCompleted`.
+* **Delete:** The screen shows a confirmation dialog, then calls `deleteTask(id)`, and shows the toast "Task deleted" when the user confirms.
+* **Filters:** `ALL`, `PENDING`, and `COMPLETED` are applied in memory. The empty state follows the filtered list.
+* **Dashboard statistics:** `TaskDetailsActivity` counts total, pending, and completed from `allTasks`, so the counts stay global while the list is filtered.
+* **Reactive MVVM:** `TaskRepository.allTasks` is a cold `Flow`. `TaskViewModel` exposes `allTasks` and `filteredTasks` as `StateFlow`.
 
 ---
 
 ## Architecture
 
-The project follows an approved Clean Architecture / MVVM flow:
+The project follows this MVVM repository flow:
+
+```text
+MainActivity (navigation only)
+  -> TaskDetailsActivity
+    -> TaskViewModelFactory
+      -> AppDatabase -> TaskDao -> TaskRepository -> TaskViewModel
+```
+
+Runtime task operations follow:
 
 ```text
 Screen (Activity) -> ViewModel -> Repository -> Room Storage (DAO / Database)
 ```
 
-* **Screen (UI):** `MainActivity` & `TaskDetailsActivity` handle user interaction and observe UI state.
-* **ViewModel:** `TaskViewModel` manages UI state and delegates operations to the repository.
-* **Repository:** `TaskRepository` acts as the single data access boundary.
-* **Storage:** Room Database (`AppDatabase`) stores persistent task data.
+* **Screen (UI):** `MainActivity` navigates. `TaskDetailsActivity` handles input, confirmation, filter-button colors, empty state, dashboard counts, and collects ViewModel state.
+* **ViewModel:** `TaskViewModel` exposes `StateFlow` and delegates `insertTask`, `updateTaskCompletion`, `deleteTask`, and `setFilter` to the repository.
+* **Repository:** `TaskRepository` is the data-access boundary. `allTasks` is a cold `Flow` from `TaskDao.getAllTasks()`. The repository does not expose `StateFlow`.
+* **Storage:** Room `AppDatabase` stores `TaskEntity` rows. The DAO query `Flow` re-emits after writes to `tasks`.
 
-For visual architectural reference, see [docs/diagrams/architecture.mmd](docs/diagrams/architecture.mmd).
+`TaskViewModel.allTasks` and `filteredTasks` use `stateIn` with `viewModelScope` and `SharingStarted.Eagerly`. Their initial value is `emptyList()`. `filteredTasks` combines the repository `Flow` with `currentFilter`. The activity collects `allTasks` and `filteredTasks` with `lifecycleScope` and `repeatOnLifecycle(STARTED)`. It does not collect `currentFilter`.
+
+For a diagram of the earlier baseline flow, see [docs/diagrams/architecture.mmd](docs/diagrams/architecture.mmd). Current behavior is this README together with `AGENTS.md`.
+
+---
+
+## Recorded Technical Risks
+
+These are recorded facts about the current code. This section does not request a behavior change.
+
+* Database version 4 uses `fallbackToDestructiveMigration(true)` and does not export a schema. An older installed database is dropped on open.
+* One-way completion is the disabled checkbox in `TaskAdapter`. The DAO update still accepts any Boolean.
+* `priority` is an unconstrained `String`. Unknown values sort after Low and use the Medium color.
+* The activity does not collect `currentFilter`, so filter-button colors can disagree with the saved filter after recreation.
+* `allTasks` and `filteredTasks` each collect the cold Room `Flow`.
+* The "Task deleted" toast is shown when the user confirms, before the database write finishes.
+* The first `StateFlow` value is `emptyList()` until Room emits.
+* `docs/ARCHITECTURE.md` and `docs/TASK_MODEL.md` describe an earlier model and can omit priority, delete, filters, and dashboard counts.
 
 ---
 
@@ -164,7 +212,9 @@ Employeetaskmanager/
 
 ---
 
-## Day 3 Acceptance Criteria Verification (12 / 12 PASS)
+## Day 3 Acceptance Criteria (Historical)
+
+This checklist records the Day 3 submission. It is not the complete current feature list. Current behavior is the **Implemented Features** section above.
 
 1. App launches successfully — **PASS**
 2. Home → Task Details navigation works — **PASS**

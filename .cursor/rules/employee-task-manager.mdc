@@ -10,43 +10,67 @@ alwaysApply: true
 - Android application developed using Kotlin.
 - Package: `com.example.employeetaskmanager`.
 - Business request: Employees must view tasks, add tasks, mark complete, and see status.
+- Implemented behavior already in the source, beyond that original request: task priority, delete with confirmation, All / Pending / Completed filters, dashboard total / pending / completed counts, and one-way completion. These are existing code, not new business requirements.
 - Read the root `AGENTS.md` before making significant project changes.
 
 ## 2. Approved Architecture
 
 Follow this architecture:
 
-Screen -> ViewModel -> Repository -> Storage (Room)
+```text
+MainActivity (navigation only)
+  -> TaskDetailsActivity
+    -> TaskViewModelFactory
+      -> AppDatabase -> TaskDao -> TaskRepository -> TaskViewModel
+```
+
+Runtime task operations follow: Screen -> ViewModel -> Repository -> Storage (Room).
+
+`TaskDao.getAllTasks()` emits a cold `Flow`. `TaskRepository` forwards that `Flow`. `TaskViewModel` converts it to hot `StateFlow`s. The screen collects those `StateFlow`s.
 
 ### Screen
 
-- `MainActivity` and `TaskDetailsActivity` handle user interaction.
-- `TaskAdapter` displays tasks through RecyclerView.
-- Activities must communicate with `TaskViewModel` for task operations.
-- Do not access Room, AppDatabase, or TaskDao directly from Activities.
+- `MainActivity` only starts `TaskDetailsActivity` through an explicit `Intent`. It has no ViewModel.
+- `TaskDetailsActivity` handles task interaction and must communicate with `TaskViewModel` for task operations.
+- `TaskDetailsActivity` owns input validation feedback, delete confirmation, filter-button colors, empty-state visibility, and dashboard counts.
+- `TaskAdapter` binds title, priority color, Pending/Completed status, the one-way checkbox, and delete through RecyclerView.
+- Do not access Room, `AppDatabase`, or `TaskDao` directly from Activities.
 
 ### ViewModel
 
 - `TaskViewModel` manages task-related UI state.
 - Receive `TaskRepository` through constructor injection.
-- Use `StateFlow` and the existing coroutine lifecycle pattern.
+- Expose `allTasks`, `filteredTasks`, and `currentFilter` as `StateFlow`.
+- Apply `ALL`, `PENDING`, and `COMPLETED` filters in memory with `combine`.
+- Launch `insertTask`, `updateTaskCompletion`, and `deleteTask` on `viewModelScope`. `setFilter` writes `currentFilter`.
+- Use `StateFlow` and the existing coroutine lifecycle pattern: `stateIn` with `viewModelScope` and `SharingStarted.Eagerly`.
 - Do not directly access `AppDatabase`, `TaskDao`, Room, or Android `Application`.
 
 ### Repository
 
 - `TaskRepository` is the only application layer that performs task-related database operations through `TaskDao`.
-- Keep data access operations inside the Repository.
+- `TaskRepository.allTasks` is a cold `Flow`. Do not describe the repository stream as `StateFlow`.
+- The repository forwards insert, completion update, and delete. Keep data access operations inside the Repository.
 
 ### Storage
 
-- `TaskEntity` defines the task data.
-- `TaskDao` provides database operations.
-- `AppDatabase` provides the Room database instance.
+- `TaskEntity` defines the `tasks` table: `id` (`Long`, auto-generated), `title` (`String`), `isCompleted` (`Boolean`, default `false`), and `priority` (`String`, default `"Medium"`).
+- `TaskDao` provides `getAllTasks()` as a cold `Flow`, plus insert, `updateTaskCompletion`, and `deleteTask`.
+- `getAllTasks()` orders by priority (High, then Medium, then Low, then any other value), then pending before completed, then `id DESC`.
+- `AppDatabase` is the singleton Room database `task_database`.
 
 ### Dependency Creation
 
 - `TaskViewModelFactory` constructs `AppDatabase`, obtains `TaskDao`, creates `TaskRepository`, and supplies the Repository to `TaskViewModel`.
 - Dependency creation must not bypass the Repository boundary for task operations.
+
+### Room, Flow, and StateFlow
+
+- The repository exposes `Flow`. The ViewModel exposes `StateFlow`.
+- `allTasks` and `filteredTasks` use `stateIn`, `viewModelScope`, and `SharingStarted.Eagerly`, with initial value `emptyList()`.
+- `TaskDetailsActivity` collects `allTasks` and `filteredTasks` with `lifecycleScope` and `repeatOnLifecycle(STARTED)`.
+- The activity does not collect `currentFilter`. Filter-button colors are updated in the click listeners.
+- `allTasks` and `filteredTasks` each subscribe to the cold repository `Flow`.
 
 ## 3. Task Business Rules
 
@@ -56,7 +80,12 @@ Screen -> ViewModel -> Repository -> Storage (Room)
 - `isCompleted = false` means Pending.
 - `isCompleted = true` means Completed.
 - Task status must remain consistent with the stored completion state.
-- Preserve existing empty-task handling and input validation.
+- `priority` defaults to `"Medium"`. The add-task spinner offers `Low`, `Medium`, and `High`, and starts on `Medium`. Those are UI values. The database stores `priority` as an unconstrained `String`.
+- Empty task titles are rejected in `TaskDetailsActivity` with a toast using `R.string.error_empty_title`. `TaskViewModel.insertTask` trims the title and returns without inserting when the result is blank.
+- Preserve existing empty-task handling and input validation. Empty state follows the filtered list.
+- One-way completion is screen behavior: `TaskAdapter` disables the checkbox when `isCompleted` is true. `TaskDao.updateTaskCompletion` still writes the Boolean it receives.
+- Delete requires the existing confirmation dialog, then `deleteTask(id)`.
+- Dashboard total, pending, and completed counts are computed in `TaskDetailsActivity` from `allTasks`.
 
 ## 4. Development Guidelines
 
@@ -64,6 +93,7 @@ Screen -> ViewModel -> Repository -> Storage (Room)
 - Follow existing Kotlin, XML, and Gradle conventions.
 - Make minimal and incremental changes.
 - Preserve existing Day 1 and Day 2 functionality.
+- Preserve existing priority, delete, filter, dashboard statistics, and one-way completion behavior. Do not remove those features.
 - Do not introduce unrelated features or dependencies.
 - Do not invent business requirements.
 - Do not replace Room or change the approved architecture without an explicit requirement.
@@ -73,7 +103,19 @@ Screen -> ViewModel -> Repository -> Storage (Room)
 - Review the Git diff after modifications.
 - Do not commit or push unless explicitly requested.
 
-## 5. Build and Verification
+## 5. Recorded Technical Behavior
+
+Record these facts. Do not change them unless a later request explicitly asks for a behavior change.
+
+- `AppDatabase` is version 4, `exportSchema = false`, and uses `fallbackToDestructiveMigration(true)`.
+- `allTasks` and `filteredTasks` are two separate collections of the cold Room `Flow`.
+- The "Task deleted" toast is shown when the user confirms, before the database write finishes.
+- `priority` is stored as an unconstrained `String`.
+- Filter-button highlight can diverge from `currentFilter` after recreation, because the activity does not collect `currentFilter`.
+- The first `StateFlow` value can be an empty list, before Room emits stored rows.
+- Day-scoped documents under `docs/` can omit priority, delete, filters, dashboard counts, and one-way completion.
+
+## 6. Build and Verification
 
 Use Windows PowerShell commands from the project root.
 
@@ -90,7 +132,7 @@ Unit tests:
 - Never claim a test passed unless it was executed successfully.
 - Report failures clearly before proposing unrelated changes.
 
-## 6. Project Documentation
+## 7. Project Documentation
 
 Use these files as project references:
 
@@ -102,3 +144,5 @@ Use these files as project references:
 - `docs/DECISIONS.md`
 - `docs/CURRENT_STATUS.md`
 - `docs/diagrams/architecture.mmd`
+
+If `docs/ARCHITECTURE.md`, `docs/TASK_MODEL.md`, or another day-scoped note disagrees with this rule, follow this rule and the current Kotlin sources.
