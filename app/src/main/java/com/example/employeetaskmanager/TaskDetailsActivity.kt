@@ -85,17 +85,14 @@ class TaskDetailsActivity : AppCompatActivity() {
 
         btnFilterAll.setOnClickListener {
             viewModel.setFilter(TaskFilter.ALL)
-            updateFilterButtons(TaskFilter.ALL)
         }
 
         btnFilterPending.setOnClickListener {
             viewModel.setFilter(TaskFilter.PENDING)
-            updateFilterButtons(TaskFilter.PENDING)
         }
 
         btnFilterCompleted.setOnClickListener {
             viewModel.setFilter(TaskFilter.COMPLETED)
-            updateFilterButtons(TaskFilter.COMPLETED)
         }
 
         buttonAddTask.setOnClickListener {
@@ -112,6 +109,13 @@ class TaskDetailsActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Collect current filter to sync button appearance
+                launch {
+                    viewModel.currentFilter.collect { filter ->
+                        updateFilterButtons(filter)
+                    }
+                }
+
                 // Collect total tasks for statistics counts
                 launch {
                     viewModel.allTasks.collect { tasks ->

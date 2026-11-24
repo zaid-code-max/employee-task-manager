@@ -1,0 +1,97 @@
+﻿sequenceDiagram
+    autonumber
+    actor User
+    participant Activity as TaskDetailsActivity
+    participant VM as TaskViewModel
+    participant Repo as TaskRepository
+    participant Dao as TaskDao
+    participant DB as AppDatabase
+    participant Client as TaskApiClient
+    participant API as Mock REST API
+    participant DTO as ApiTaskDto
+    participant Mapper as ApiTaskMapper
+
+    User->>Activity: Open TaskDetailsActivity
+    Activity->>VM: Start collecting task StateFlows
+    VM-->>Activity: Expose allTasks and filteredTasks
+
+    Note over VM,DB: Existing verified Room data path
+    VM->>Repo: Observe/request task data
+    Repo->>Dao: Request local tasks
+    Dao->>DB: Execute Room query
+    DB-->>Dao: Return stored records
+    Dao-->>Repo: Return Flow of TaskEntity list
+    Repo-->>VM: Expose local task data
+    VM-->>Activity: Publish task UI state through StateFlow
+
+    Note over Repo,API: Proposed API retrieval through TaskApiClient (PENDING - TRAINER APPROVAL)
+    Repo->>Client: Request task retrieval
+    Client->>API: Proposed GET /api/v1/tasks
+
+    alt API success with task records
+        API-->>Client: Return JSON task response
+        Client->>DTO: Deserialize JSON into List<ApiTaskDto>
+        DTO-->>Client: Return parsed DTO list
+        Client-->>Repo: Return parsed API task data
+        Repo->>Mapper: Map DTOs into approved application model
+        Mapper-->>Repo: Return mapped task data
+        Repo-->>VM: Emit proposed successful retrieval result
+        VM-->>Activity: Publish updated UI state through StateFlow
+        Note over Repo,DB: API data persistence or Room merge remains PENDING - TRAINER APPROVAL
+
+    else Successful empty JSON array
+        API-->>Client: Return empty JSON array []
+        Client-->>Repo: Return empty parsed task list
+        Repo-->>VM: Emit proposed empty-result state
+        VM-->>Activity: Publish approved empty or cached UI state
+        Note over Repo,Activity: Effect on existing Room records is PENDING - TRAINER APPROVAL
+
+    else HTTP 204 No Content
+        API-->>Client: Return HTTP 204 without response body
+        Client-->>Repo: Return no-content result
+        Repo-->>VM: Emit proposed no-content state
+        VM-->>Activity: Publish approved no-content or cached UI state
+        Note over Repo,Activity: HTTP 204 behavior is PENDING - TRAINER APPROVAL
+
+    else Offline connectivity failure
+        Note over Client,API: No HTTP response; connectivity failure occurs before a response is received
+        Client-->>Repo: Report proposed connectivity error
+        Repo-->>VM: Emit proposed offline error state
+        VM-->>Activity: Retain cached tasks or show offline error and retry
+
+    else Network timeout
+        Note over Client,API: Request times out without a successful HTTP response
+        Client-->>Repo: Report proposed timeout error
+        Repo-->>VM: Emit proposed timeout error state
+        VM-->>Activity: Retain cached tasks or show timeout error and retry
+
+    else HTTP 4xx client error
+        API-->>Client: Return HTTP 4xx response
+        Client-->>Repo: Report proposed HTTP client error
+        Repo-->>VM: Emit proposed client error state
+        VM-->>Activity: Retain cached tasks or show client error and retry
+
+    else HTTP 5xx server error
+        API-->>Client: Return HTTP 5xx response
+        Client-->>Repo: Report proposed HTTP server error
+        Repo-->>VM: Emit proposed server error state
+        VM-->>Activity: Retain cached tasks or show server error and retry
+
+    else Malformed JSON or invalid response fields
+        API-->>Client: Return malformed or incomplete JSON
+        Client->>DTO: Attempt JSON deserialization
+        DTO-->>Client: Report proposed parsing or validation failure
+        Client-->>Repo: Report proposed response parsing error
+        Repo-->>VM: Emit proposed data error state
+        VM-->>Activity: Retain cached tasks or show data error and retry
+    end
+
+    Note over Repo,Activity: Cache availability rules and exact UI behavior require trainer approval
+
+    opt User chooses Retry
+        User->>Activity: Select Retry
+        Activity->>VM: Trigger retry action
+        VM->>Repo: Request another retrieval
+        Repo->>Client: Request another API fetch
+        Client->>API: Repeat proposed GET request
+    end

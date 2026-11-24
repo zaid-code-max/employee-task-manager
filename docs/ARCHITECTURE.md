@@ -93,13 +93,14 @@ The Storage layer is implemented using the Room Persistence Library.
 
 ### TaskEntity
 - Defines the `tasks` database table.
-- Stores the task ID, title, and completion state.
+- Stores the task ID, title, completion state, and priority.
 - Generates unique task IDs automatically.
 
 ### TaskDao
 - `getAllTasks()` retrieves tasks as a Flow.
 - `insertTask()` inserts a task.
 - `updateTaskCompletion()` updates the completion state.
+- `deleteTask()` deletes a task.
 
 ### AppDatabase
 - Provides the Room database instance.
@@ -223,3 +224,122 @@ This flow creates the dependencies required by the ViewModel. It is separate fro
 - The Repository performs task-related data operations through TaskDao.
 - Room manages persistent task data.
 - The Factory creates and supplies dependencies; it does not replace the Repository as the task data-access boundary.
+
+---
+
+## Day 6 — API-Backed Task-List Retrieval Architecture (Planning Only)
+
+### 1. Scope
+This section records the proposed architecture for retrieving tasks from a mock REST API. It supplements the existing architecture documentation without replacing the verified Room-based design.
+
+No API implementation, UI changes, database changes or dependency additions are included in Day 6.
+
+### 2. Verified Existing Architecture
+The inspected application currently follows this flow:
+
+`MainActivity → TaskDetailsActivity → TaskViewModel → TaskRepository → TaskDao → Room Database`
+
+- `MainActivity` opens `TaskDetailsActivity` through an explicit Intent.
+- `TaskDetailsActivity` obtains its ViewModel through `TaskViewModelFactory`.
+- `TaskViewModelFactory` creates the database, DAO, repository and ViewModel.
+- `TaskViewModel` exposes task and filter information using StateFlows.
+- `TaskRepository` delegates local task operations to `TaskDao`.
+- `TaskDao` exposes Room task data through `Flow<List<TaskEntity>>`.
+- `TaskDetailsActivity` observes task streams for the list, empty state and global dashboard counts.
+
+The current `TaskEntity` contains `id`, `title`, `isCompleted` and `priority`. The database is Room version 4 and uses the database name `task_database`.
+
+No API client is currently present in the inspected application source.
+
+### 3. Proposed API Retrieval Architecture
+The proposed remote retrieval path is:
+
+`TaskDetailsActivity → TaskViewModel → TaskRepository → TaskApiClient → Mock REST API`
+
+The proposed response-mapping path is:
+
+`Mock REST API → ApiTaskDto → ApiTaskMapper → TaskRepository → TaskViewModel → TaskDetailsActivity`
+
+These are proposed components and flows, not existing application code.
+
+The existing Room data path should remain available:
+
+`TaskViewModel → TaskRepository → TaskDao → Room Database`
+
+The decision about how remote results interact with Room—including whether mapped API records are persisted, merged or displayed separately—is **[PENDING — TRAINER APPROVAL]**.
+
+### 4. Proposed Component Responsibilities
+- `TaskDetailsActivity`: display task data, loading/error states and retry interaction.
+- `TaskViewModel`: expose screen state and coordinate retrieval requests.
+- `TaskRepository`: coordinate remote retrieval and existing local data access.
+- `TaskApiClient`: perform the approved mock API request. Not created.
+- `ApiTaskDto`: represent the agreed API response structure. Not created.
+- `ApiTaskMapper`: convert the API response into the approved application model. Not created.
+- `TaskDao` and Room: preserve the existing local persistence behavior.
+
+Final class names, responsibilities and package locations require trainer approval.
+
+### 5. Loading, Cache and Error-State Design
+The proposed screen should account for:
+
+- Initial loading when no cached records are available.
+- Existing cached tasks remaining visible during refresh.
+- Successful API retrieval with task records.
+- Successful empty response.
+- Offline retrieval failure with cached records.
+- Offline retrieval failure without cached records and with retry.
+- HTTP 4xx client errors.
+- HTTP 5xx server errors, with and without cached records.
+- Request timeout.
+- Invalid or malformed response data.
+- User-initiated retry.
+
+The exact state model and UI behavior remain **[PENDING — TRAINER APPROVAL]**.
+
+### 6. Data Consistency and Failure Risks
+- Room and remote API records may have different ID behavior.
+- Duplicate IDs and conflicting task updates need an approved policy.
+- An empty API response must not unintentionally delete existing Room records.
+- Offline task creation, completion and deletion require an agreed synchronization strategy.
+- API failure must not silently destroy or overwrite local task data.
+- The current destructive migration fallback is an existing local database risk and must be considered separately from the proposed API integration.
+
+### 7. Existing Functionality to Preserve
+Any future implementation must preserve:
+
+- Room-based task persistence.
+- Task creation with Low, Medium and High priority.
+- Existing one-way completion behavior through the UI.
+- Priority ordering: High, Medium, Low, other; pending before completed; newest ID first.
+- Delete confirmation.
+- All, Pending and Completed filters.
+- Global dashboard counts.
+- Existing Home (`MainActivity`) to Task Details navigation.
+
+Regression testing is required after trainer approval and implementation.
+
+### 8. Mermaid Diagram References
+The proposed diagrams are maintained separately:
+
+- `docs/diagrams/api_task_retrieval_architecture.mmd` — proposed component and data-flow architecture.
+- `docs/diagrams/api_task_retrieval_sequence.mmd` — proposed retrieval, response mapping, error handling and retry sequence.
+
+The original `docs/diagrams/architecture.mmd` remains the existing baseline diagram and should be preserved.
+
+### 9. Approval Gate
+The following decisions must be approved before implementation:
+
+- API endpoint, response structure and authentication.
+- API client library.
+- DTO and mapping rules.
+- Room/API source of truth.
+- Cache, merge or replacement strategy.
+- Empty-response and HTTP 204 behavior.
+- Remote/local ID mapping and conflict resolution.
+- Offline write synchronization.
+- Loading, error and retry behavior.
+
+All unresolved decisions remain **[PENDING — TRAINER APPROVAL]**.
+
+### 10. Day 6 Restriction
+This architecture is a planning artifact only. The proposed API components and flows have not been implemented or tested. No implementation should begin until the required trainer approval is received.
