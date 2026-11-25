@@ -1,38 +1,59 @@
 ﻿flowchart TB
-    subgraph A["A. Verified Existing Architecture Baseline"]
-        direction TB
-        ActivityA[TaskDetailsActivity] -->|Sends user actions| VMA[TaskViewModel]
-        VMA -->|Exposes allTasks and filteredTasks StateFlow| ActivityA
-        VMA -->|Requests task data| RepoA[TaskRepository]
-        RepoA -->|Queries DAO| DaoA[TaskDao]
-        DaoA -->|Queries DB| DBA[AppDatabase]
-        DBA -->|Room records| DaoA
-        DaoA -->|Flow list of TaskEntity| RepoA
-        RepoA -->|Returns Flow/result| VMA
 
-        NoteA1[TaskEntity has id, title, isCompleted, priority]
-        NoteA2[TaskDao supports retrieval Flow, insert, update completion, delete]
+    subgraph Local["Existing Local Room Task Flow"]
+        direction TB
+        LocalScreen["TaskDetailsActivity<br/>Local Task Section"]
+        LocalVM["TaskViewModel<br/>allTasks / filteredTasks"]
+        LocalRepo["TaskRepository"]
+        DAO["TaskDao"]
+        DB[("AppDatabase<br/>Room Database")]
+        Entity["TaskEntity"]
+
+        LocalScreen -->|"Collects local StateFlows"| LocalVM
+        LocalVM -->|"Observes repository.allTasks"| LocalRepo
+        LocalRepo -->|"getAllTasks()"| DAO
+        DAO -->|"Room query"| DB
+        DB -->|"Stored task records"| DAO
+        DAO -->|"Flow<List<TaskEntity>>"| LocalRepo
+
+        Entity --- DB
     end
 
-    subgraph B["B. Proposed API Retrieval Architecture (Unimplemented / PENDING)"]
+    subgraph Remote["Implemented Remote REST API Task Retrieval"]
         direction TB
-        ActivityB[TaskDetailsActivity] -->|Sends user actions| VMB[TaskViewModel]
-        VMB -->|Requests task retrieval| RepoB[TaskRepository]
 
-        RepoB -.->|Proposed request through client| Client[TaskApiClient]
-        Client -.->|Proposed GET /api/v1/tasks| API[Mock REST API]
-        API -.->|Proposed JSON response| Client
-        Client -.->|Proposed response body| DTO[ApiTaskDto]
-        DTO -.->|DTO supplied for conversion| Mapper[ApiTaskMapper]
-        Mapper -.->|Mapped application model| RepoB
-        RepoB -.->|Proposed result exposed to ViewModel| VMB
-        VMB -.->|Proposed UI state through StateFlow| ActivityB
+        Screen["TaskDetailsActivity<br/>API Section"]
+        VM["TaskViewModel<br/>apiTaskState: StateFlow"]
+        Repo["TaskRepository<br/>fetchApiTasks()"]
+        Client["TaskApiClient<br/>HttpURLConnection"]
+        API["JSONPlaceholder REST API<br/>GET /todos"]
+        DTO["ApiTaskDto<br/>userId, id, title, completed"]
+        Adapter["ApiTaskAdapter"]
+        List["recyclerViewApiTasks"]
+        States["ProgressBar / Status Text / Retry Button"]
 
-        RepoB -->|Existing local data operations| DaoB[TaskDao]
-        DaoB -->|Existing database access| DBB[AppDatabase]
-        DBB -->|Stored Room records| DaoB
-        DaoB -->|Existing Room Flow| RepoB
+        Screen -->|"loadApiTasks() at onCreate"| VM
+        Screen -->|"Retry: forceRefresh = true"| VM
 
-        NoteB1[API result persistence, Room/API merge or replacement, ID mapping and synchronization are PENDING - TRAINER APPROVAL]
-        NoteB2[TaskApiClient, DTO, Mapper and remote connections are proposed, not implemented]
+        VM -->|"fetchApiTasks()"| Repo
+        Repo -->|"fetchTasks()"| Client
+        Client -->|"HTTP GET<br/>https://jsonplaceholder.typicode.com/todos"| API
+
+        API -->|"HTTP status and response body"| Client
+        Client -->|"Direct JSON parsing<br/>JSONArray / JSONObject"| DTO
+        Client -->|"Result<List<ApiTaskDto>>"| Repo
+        Repo -->|"Returns API result"| VM
+        VM -->|"apiTaskState"| Screen
+
+        Screen -->|"Success: submitList(tasks)"| Adapter
+        Adapter -->|"Binds title, status, API ID and user ID"| List
+        VM -->|"Loading / Empty / Error / Success"| States
     end
+
+    NoteAPI["HTTP 204 and empty JSON array produce Empty state.<br/>Non-2xx responses and parsing or network failures produce Error state."]
+    NoteStorage["Remote API records remain separate from Room.<br/>No Room persistence, caching, merging or synchronization implemented."]
+    NoteParser["JSON is parsed directly into ApiTaskDto.<br/>No separate ApiTaskMapper implementation."]
+
+    Client --- NoteAPI
+    Repo --- NoteStorage
+    Client --- NoteParser

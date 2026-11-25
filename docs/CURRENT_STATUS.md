@@ -77,3 +77,70 @@ Recording these facts does not authorize a behavior change.
 
 - Application code delivery is complete.
 - This documentation sync aligns `AGENTS.md`, the Cursor project rule, this status file, and `README.md` with the current source. It is not a new feature.
+
+## Week 2 Day 7 — REST API Task Retrieval
+
+**Status:** Implementation and network evidence captured.
+
+### Implemented components
+
+- Added `TaskApiClient` using `HttpURLConnection` for GET requests.
+- Integrated JSONPlaceholder endpoint: `GET https://jsonplaceholder.typicode.com/todos`.
+- Added `ApiTaskDto` with userId, id, title, and completed fields.
+- Integrated API retrieval through `TaskRepository.fetchApiTasks()`.
+- Added API UI states in `TaskViewModel`: Idle, Loading, Success, Empty, and Error.
+- Added Retry using `loadApiTasks(forceRefresh = true)`.
+- Added an independent API task RecyclerView using `ApiTaskAdapter`.
+- Preserved the existing local Room task list and dashboard.
+
+### Network verification evidence
+
+- Android Studio Network Inspector captured three GET `/todos` requests.
+- All three displayed HTTP 200.
+- JSON response body was confirmed to contain 200 task records.
+- Device: OPPO CPH1877.
+- The API task list displayed remote task information separately from local Room tasks.
+
+### Saved evidence
+
+Location: `docs/week 2/day 7/screenshots/`
+
+1. `01-network-request-http-200.png`
+2. `02-network-response-200-records.png`
+3. `03-api-task-list-200-records.jpg`
+
+### Architecture documentation
+
+- Updated `docs/diagrams/api_task_retrieval_architecture.mmd`.
+- Updated `docs/diagrams/api_task_retrieval_sequence.mmd`.
+- Preserved the original `docs/diagrams/architecture.mmd`.
+
+### API limitations
+
+- Remote API records are read-only.
+- No Room persistence, API caching, or offline synchronization is implemented.
+
+## Week 2 Day 7 - Verification Record Clarification
+
+### Authoritative API verification record
+
+- `docs/API_CONTRACT.md` is the detailed REST API contract and verification record.
+- Previously recorded unit-test, build, installation, Airplane Mode, and retry-recovery results remain historical verification records.
+- Those historical build and test results were not rerun during the current Day 7 documentation update.
+
+### Newly captured Network Inspector evidence
+
+Date: 24 November 2026.
+
+- Device: OPPO CPH1877.
+- Three `GET /todos` requests were captured in Android Studio Network Inspector.
+- All three displayed HTTP 200.
+- Response Body was confirmed to contain 200 JSON records.
+- Three supporting screenshots were saved in `docs/week 2/day 7/screenshots/`.
+
+### Independent Codex review
+
+- Recommendation: APPROVE WITH MINOR FOLLOW-UP.
+- No critical or major findings identified.
+- No confirmed bugs established by the read-only review.
+- Remaining observations are recorded in `docs/CODEX_REVIEW.md`.

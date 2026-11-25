@@ -62,3 +62,78 @@
 **App working check:** Confirmed by the user.
 
 **Controlled Bug A/B debugging proof:** Pending. Do not claim both controlled bugs have been fully reproduced and verified.
+
+---
+
+## Week 2 Day 7 — Independent REST API Review
+
+**Review date:** 24 November 2026  
+**Reviewer:** Codex  
+**Review type:** Independent, read-only source and documentation review
+
+### Scope
+
+Reviewed the REST API client, DTO, Repository, ViewModel, Activity, adapter, layouts, Manifest, unit tests, API contract, status documentation, decisions, and updated diagrams.
+
+### Review Outcome
+
+**APPROVE WITH MINOR FOLLOW-UP**
+
+The REST API retrieval implementation, HTTP handling, JSON parsing, Repository and ViewModel integration, UI states, Retry action, and independent API RecyclerView are present.
+
+### Critical Findings
+
+None identified.
+
+### Major Findings
+
+None identified.
+
+### Minor Findings
+
+1. **API test coverage**
+   - Dedicated tests are missing for malformed JSON, missing or wrong-typed fields, blank titles, HTTP 4xx, timeout, redirect handling, and cancellation propagation.
+   - ViewModel error-state transitions and Retry guard also lack dedicated tests.
+
+2. **Error message handling**
+   - `TaskApiClient.kt`:44 and `TaskViewModel.kt`:70–76.
+   - Raw server error text may be exposed through the UI.
+   - Recommendation: use safe user-facing messages and retain diagnostic details separately.
+
+3. **Verification documentation consistency**
+   - `API_CONTRACT.md` records test, build, device, and network verification.
+   - `CURRENT_STATUS.md` should explicitly identify API_CONTRACT.md as the detailed verification record and distinguish previously recorded results from newly captured Day 7 evidence.
+
+### Missing Test Coverage
+
+- JSON parsing and field validation.
+- Malformed JSON and non-object array elements.
+- HTTP 4xx responses.
+- Timeout and redirect behavior.
+- Coroutine cancellation propagation.
+- ViewModel state transitions and Retry guard.
+
+### Confirmed Bugs Versus Possible Risks
+
+- Confirmed bugs: None established by this review.
+- Possible risk: Server error text may appear in the UI.
+- Possible risk: Parser and ViewModel edge cases have limited automated test coverage.
+
+### Positive Design Findings
+
+- API tasks remain separate from Room records.
+- Remote records are not converted into `TaskEntity`.
+- Retry uses `loadApiTasks(forceRefresh = true)`.
+- Existing Room task storage and dashboard remain independent.
+
+### Review Limitations
+
+- This was a read-only review.
+- No source or documentation files were modified by Codex.
+- No tests or builds were independently executed during this review.
+
+### Final Recommendation
+
+**APPROVE WITH MINOR FOLLOW-UP**
+
+The Week 2 Day 7 REST API retrieval scope is approved with the minor improvements documented above.

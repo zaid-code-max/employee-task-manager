@@ -1,8 +1,11 @@
-package com.example.employeetaskmanager
+﻿package com.example.employeetaskmanager
 
 import kotlinx.coroutines.flow.Flow
 
-class TaskRepository(private val taskDao: TaskDao) {
+class TaskRepository(
+    private val taskDao: TaskDao,
+    private val taskApiClient: TaskApiClient = TaskApiClient()
+) {
 
     val allTasks: Flow<List<TaskEntity>> = taskDao.getAllTasks()
 
@@ -16,5 +19,9 @@ class TaskRepository(private val taskDao: TaskDao) {
 
     suspend fun deleteTask(taskId: Long) {
         taskDao.deleteTask(taskId)
+    }
+
+    suspend fun fetchApiTasks(): Result<List<ApiTaskDto>> {
+        return taskApiClient.fetchTasks()
     }
 }

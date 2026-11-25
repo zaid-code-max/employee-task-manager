@@ -4,94 +4,84 @@
     participant Activity as TaskDetailsActivity
     participant VM as TaskViewModel
     participant Repo as TaskRepository
-    participant Dao as TaskDao
-    participant DB as AppDatabase
     participant Client as TaskApiClient
-    participant API as Mock REST API
+    participant API as JSONPlaceholder REST API
     participant DTO as ApiTaskDto
-    participant Mapper as ApiTaskMapper
+    participant Adapter as ApiTaskAdapter
 
     User->>Activity: Open TaskDetailsActivity
-    Activity->>VM: Start collecting task StateFlows
-    VM-->>Activity: Expose allTasks and filteredTasks
+    Activity->>VM: loadApiTasks()
+    VM->>VM: Check current API state
+    VM->>VM: Set Loading
+    Activity->>VM: Collect apiTaskState
+    VM-->>Activity: Loading state
+    Activity->>Activity: Show ProgressBar and loading message
 
-    Note over VM,DB: Existing verified Room data path
-    VM->>Repo: Observe/request task data
-    Repo->>Dao: Request local tasks
-    Dao->>DB: Execute Room query
-    DB-->>Dao: Return stored records
-    Dao-->>Repo: Return Flow of TaskEntity list
-    Repo-->>VM: Expose local task data
-    VM-->>Activity: Publish task UI state through StateFlow
+    VM->>Repo: fetchApiTasks()
+    Repo->>Client: fetchTasks()
+    Client->>API: GET /todos
 
-    Note over Repo,API: Proposed API retrieval through TaskApiClient (PENDING - TRAINER APPROVAL)
-    Repo->>Client: Request task retrieval
-    Client->>API: Proposed GET /api/v1/tasks
+    alt HTTP 204 No Content
+        API-->>Client: HTTP 204
+        Client-->>Repo: Result.success(emptyList())
+        Repo-->>VM: Successful empty result
+        VM->>VM: Set Empty
+        VM-->>Activity: Empty state
+        Activity->>Activity: Show empty message and Retry
+        Activity->>Adapter: submitList(emptyList())
+        Activity->>Activity: Hide API RecyclerView
 
-    alt API success with task records
-        API-->>Client: Return JSON task response
-        Client->>DTO: Deserialize JSON into List<ApiTaskDto>
-        DTO-->>Client: Return parsed DTO list
-        Client-->>Repo: Return parsed API task data
-        Repo->>Mapper: Map DTOs into approved application model
-        Mapper-->>Repo: Return mapped task data
-        Repo-->>VM: Emit proposed successful retrieval result
-        VM-->>Activity: Publish updated UI state through StateFlow
-        Note over Repo,DB: API data persistence or Room merge remains PENDING - TRAINER APPROVAL
+    else HTTP 2xx with nonblank response body
+        API-->>Client: JSON array response
+        Client->>Client: Parse JSONArray and required fields
+        Client->>DTO: Create ApiTaskDto records
+        Client-->>Repo: Result.success(List<ApiTaskDto>)
+        Repo-->>VM: Successful API result
 
-    else Successful empty JSON array
-        API-->>Client: Return empty JSON array []
-        Client-->>Repo: Return empty parsed task list
-        Repo-->>VM: Emit proposed empty-result state
-        VM-->>Activity: Publish approved empty or cached UI state
-        Note over Repo,Activity: Effect on existing Room records is PENDING - TRAINER APPROVAL
+        alt API task list contains records
+            VM->>VM: Set Success(tasks)
+            VM-->>Activity: Success state
+            Activity->>Activity: Hide ProgressBar and Retry
+            Activity->>Adapter: submitList(tasks)
+            Adapter->>Activity: Render title, status, ID and user ID
+            Activity->>Activity: Show API RecyclerView
 
-    else HTTP 204 No Content
-        API-->>Client: Return HTTP 204 without response body
-        Client-->>Repo: Return no-content result
-        Repo-->>VM: Emit proposed no-content state
-        VM-->>Activity: Publish approved no-content or cached UI state
-        Note over Repo,Activity: HTTP 204 behavior is PENDING - TRAINER APPROVAL
+        else API returns empty JSON array
+            VM->>VM: Set Empty
+            VM-->>Activity: Empty state
+            Activity->>Activity: Show empty message and Retry
+            Activity->>Adapter: submitList(emptyList())
+            Activity->>Activity: Hide API RecyclerView
+        end
 
-    else Offline connectivity failure
-        Note over Client,API: No HTTP response; connectivity failure occurs before a response is received
-        Client-->>Repo: Report proposed connectivity error
-        Repo-->>VM: Emit proposed offline error state
-        VM-->>Activity: Retain cached tasks or show offline error and retry
+    else Non-2xx HTTP response
+        API-->>Client: HTTP error response
+        Client->>Client: Read error body
+        Client-->>Repo: Result.failure(ApiHttpException)
+        Repo-->>VM: Failure
+        VM->>VM: Set Error(message)
+        VM-->>Activity: Error state
+        Activity->>Activity: Show error message and Retry
+        Activity->>Activity: Hide API RecyclerView
 
-    else Network timeout
-        Note over Client,API: Request times out without a successful HTTP response
-        Client-->>Repo: Report proposed timeout error
-        Repo-->>VM: Emit proposed timeout error state
-        VM-->>Activity: Retain cached tasks or show timeout error and retry
-
-    else HTTP 4xx client error
-        API-->>Client: Return HTTP 4xx response
-        Client-->>Repo: Report proposed HTTP client error
-        Repo-->>VM: Emit proposed client error state
-        VM-->>Activity: Retain cached tasks or show client error and retry
-
-    else HTTP 5xx server error
-        API-->>Client: Return HTTP 5xx response
-        Client-->>Repo: Report proposed HTTP server error
-        Repo-->>VM: Emit proposed server error state
-        VM-->>Activity: Retain cached tasks or show server error and retry
-
-    else Malformed JSON or invalid response fields
-        API-->>Client: Return malformed or incomplete JSON
-        Client->>DTO: Attempt JSON deserialization
-        DTO-->>Client: Report proposed parsing or validation failure
-        Client-->>Repo: Report proposed response parsing error
-        Repo-->>VM: Emit proposed data error state
-        VM-->>Activity: Retain cached tasks or show data error and retry
+    else Network, timeout, blank body or JSON parsing failure
+        Client->>Client: Catch exception
+        Client-->>Repo: Result.failure(exception)
+        Repo-->>VM: Failure
+        VM->>VM: Set Error(message)
+        VM-->>Activity: Error state
+        Activity->>Activity: Show error message and Retry
+        Activity->>Activity: Hide API RecyclerView
     end
 
-    Note over Repo,Activity: Cache availability rules and exact UI behavior require trainer approval
-
-    opt User chooses Retry
-        User->>Activity: Select Retry
-        Activity->>VM: Trigger retry action
-        VM->>Repo: Request another retrieval
-        Repo->>Client: Request another API fetch
-        Client->>API: Repeat proposed GET request
+    opt User selects Retry
+        User->>Activity: Click Retry button
+        Activity->>VM: loadApiTasks(forceRefresh = true)
+        VM->>VM: Set Loading
+        VM->>Repo: fetchApiTasks()
+        Repo->>Client: fetchTasks()
+        Client->>API: Repeat GET /todos
     end
+
+    Note over Repo,Activity: Remote API tasks are independent of local Room records.
+    Note over Client,VM: CancellationException is rethrown rather than converted into an Error state.
