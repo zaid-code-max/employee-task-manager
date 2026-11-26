@@ -10,6 +10,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.SocketTimeoutException
 
 class TaskApiClientTest {
 
@@ -77,7 +78,7 @@ class TaskApiClientTest {
         assertTrue(result.isSuccess)
         assertTrue(result.getOrThrow().isEmpty())
         assertTrue(!parserCalled)
-        assertTrue(fakeConnection!!.wasDisconnected)
+        assertTrue(fakeConnection?.wasDisconnected == true)
     }
 
     @Test
@@ -101,7 +102,104 @@ class TaskApiClientTest {
         assertTrue(exception is ApiHttpException)
         assertEquals(503, (exception as ApiHttpException).statusCode)
         assertTrue(exception.message!!.contains("Service unavailable"))
-        assertTrue(fakeConnection!!.wasDisconnected)
+        assertTrue(fakeConnection?.wasDisconnected == true)
+    }
+
+    @Test
+    fun fetchTasks_internalServerError_returnsHttpExceptionAndDisconnects() = runBlocking {
+        var fakeConnection: FakeHttpURLConnection? = null
+
+        val client = TaskApiClient(
+            endpoint = "https://example.test/todos",
+            connectionFactory = { url ->
+                FakeHttpURLConnection(
+                    url = url,
+                    statusCode = HttpURLConnection.HTTP_INTERNAL_ERROR,
+                    errorBody = "Internal Server Error"
+                ).also { fakeConnection = it }
+            }
+        )
+
+        val result = client.fetchTasks()
+        val exception = result.exceptionOrNull()
+
+        assertTrue(exception is ApiHttpException)
+        assertEquals(500, (exception as ApiHttpException).statusCode)
+        assertTrue(exception.message!!.contains("Internal Server Error"))
+        assertTrue(fakeConnection?.wasDisconnected == true)
+    }
+
+    @Test
+    fun fetchTasks_readTimeout_returnsFailureAndDisconnects() = runBlocking {
+        var fakeConnection: FakeHttpURLConnection? = null
+
+        val timeoutException = SocketTimeoutException("Read timed out")
+
+        val client = TaskApiClient(
+            endpoint = "https://example.test/todos",
+            connectTimeoutMs = 1000,
+            readTimeoutMs = 1250,
+            connectionFactory = { url ->
+                FakeHttpURLConnection(
+                    url = url,
+                    statusCode = HttpURLConnection.HTTP_OK,
+                    responseCodeException = timeoutException
+                ).also { fakeConnection = it }
+            }
+        )
+
+        val result = client.fetchTasks()
+        val exception = result.exceptionOrNull()
+
+        assertTrue(result.isFailure)
+        assertTrue(exception is SocketTimeoutException)
+        assertEquals("Read timed out", exception?.message)
+        assertEquals(1250, fakeConnection?.readTimeout)
+        assertTrue(fakeConnection?.wasDisconnected == true)
+    }
+
+    @Test
+    fun fetchTasks_malformedJson_returnsFailureAndDisconnects() = runBlocking {
+        var fakeConnection: FakeHttpURLConnection? = null
+
+        val client = TaskApiClient(
+            endpoint = "https://example.test/todos",
+            connectionFactory = { url ->
+                FakeHttpURLConnection(
+                    url = url,
+                    statusCode = HttpURLConnection.HTTP_OK,
+                    responseBody = """[{"userId":1,"id":1,"title":"""
+                ).also { fakeConnection = it }
+            }
+        )
+
+        val result = client.fetchTasks()
+
+        assertTrue(result.isFailure)
+        assertNotNull(result.exceptionOrNull())
+        assertTrue(fakeConnection?.wasDisconnected == true)
+    }
+
+    @Test
+    fun fetchTasks_missingRequiredField_returnsFailureAndDisconnects() = runBlocking {
+        var fakeConnection: FakeHttpURLConnection? = null
+
+        val client = TaskApiClient(
+            endpoint = "https://example.test/todos",
+            connectionFactory = { url ->
+                FakeHttpURLConnection(
+                    url = url,
+                    statusCode = HttpURLConnection.HTTP_OK,
+                    responseBody = """[{"userId":1,"id":1,"title":"Prepare report"}]"""
+                ).also { fakeConnection = it }
+            }
+        )
+
+        val result = client.fetchTasks()
+
+        assertTrue(result.isFailure)
+        assertNotNull(result.exceptionOrNull())
+        assertTrue(fakeConnection?.wasDisconnected == true)
     }
 
     @Test
@@ -125,7 +223,7 @@ class TaskApiClientTest {
         assertTrue(
             result.exceptionOrNull() is IllegalStateException
         )
-        assertTrue(fakeConnection!!.wasDisconnected)
+        assertTrue(fakeConnection?.wasDisconnected == true)
     }
 
     @Test
@@ -152,7 +250,8 @@ private class FakeHttpURLConnection(
     url: URL,
     private val statusCode: Int,
     private val responseBody: String = "",
-    private val errorBody: String = ""
+    private val errorBody: String = "",
+    private val responseCodeException: IOException? = null
 ) : HttpURLConnection(url) {
 
     var wasDisconnected = false
@@ -169,7 +268,10 @@ private class FakeHttpURLConnection(
 
     override fun usingProxy(): Boolean = false
 
-    override fun getResponseCode(): Int = statusCode
+    override fun getResponseCode(): Int {
+        responseCodeException?.let { throw it }
+        return statusCode
+    }
 
     override fun getInputStream(): InputStream {
         return ByteArrayInputStream(responseBody.toByteArray(Charsets.UTF_8))

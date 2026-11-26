@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.employeetaskmanager.TaskApiClientTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-25T07:28:22.591Z" hostname="DESKTOP-399I1GF" time="0.122">
+  <properties/>
+  <testcase name="fetchTasks_malformedJson_returnsFailureAndDisconnects" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.066"/>
+  <testcase name="fetchTasks_blankResponseBody_returnsFailure" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.003"/>
+  <testcase name="fetchTasks_noContent_returnsEmptyList" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.01"/>
+  <testcase name="fetchTasks_networkFailure_returnsFailure" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.002"/>
+  <testcase name="fetchTasks_serverError_returnsHttpException" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.01"/>
+  <testcase name="fetchTasks_successfulResponse_returnsParsedTasksAndSetsGetHeaders" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.007"/>
+  <testcase name="fetchTasks_missingRequiredField_returnsFailureAndDisconnects" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.002"/>
+  <testcase name="fetchTasks_readTimeout_returnsFailureAndDisconnects" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.002"/>
+  <testcase name="fetchTasks_internalServerError_returnsHttpExceptionAndDisconnects" classname="com.example.employeetaskmanager.TaskApiClientTest" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
