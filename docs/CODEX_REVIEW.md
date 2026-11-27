@@ -137,3 +137,16 @@ None identified.
 **APPROVE WITH MINOR FOLLOW-UP**
 
 The Week 2 Day 7 REST API retrieval scope is approved with the minor improvements documented above.
+
+---
+
+## Week 2 Day 9 — Codex Review Findings & Resolution
+
+**Review date:** 26 November 2026  
+**Reviewer:** Codex  
+
+### Findings Addressed
+1. **Duplicate JUnit dependency in `app/build.gradle.kts`:** Identified and removed.
+2. **Unused `assertTrue` import in `TaskViewModelTest.kt`:** Identified and removed.
+3. **Filter state synchronization:** `TaskDetailsActivity` now collects `viewModel.currentFilter` reactively to sync filter button UI states.
+4. **Verification:** Subsequent unit tests (`25 passed, 0 failed`) and debug build verified successful.

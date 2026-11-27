@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 class TaskRepository(
     private val taskDao: TaskDao,
-    private val taskApiClient: TaskApiClient = TaskApiClient()
+    private val taskApiClient: TaskApiDataSource = TaskApiClient()
 ) {
 
     val allTasks: Flow<List<TaskEntity>> = taskDao.getAllTasks()

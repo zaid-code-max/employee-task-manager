@@ -15,9 +15,9 @@ class TaskApiClient(
         url.openConnection() as HttpURLConnection
     },
     private val responseParser: (String) -> List<ApiTaskDto> = ::parseApiTasks
-) {
+) : TaskApiDataSource {
 
-    suspend fun fetchTasks(): Result<List<ApiTaskDto>> = withContext(Dispatchers.IO) {
+    override suspend fun fetchTasks(): Result<List<ApiTaskDto>> = withContext(Dispatchers.IO) {
         var connection: HttpURLConnection? = null
 
         try {

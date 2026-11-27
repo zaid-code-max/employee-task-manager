@@ -77,7 +77,7 @@ The initial `TaskViewModel` implementation directly created `AppDatabase` and ac
 
 **Reported behavior:** Task records do not display or refresh correctly.
 
-**Code change retained:** `TaskViewModel` now uses `SharingStarted.Eagerly` for its Room-backed task Flow so the ViewModel starts collecting task updates for its lifetime.
+**Code change retained:** `TaskViewModel` uses `SharingStarted.Eagerly` for its Room-backed task Flow so the ViewModel starts collecting task updates for its lifetime.
 
 **Current finding:** Earlier device notes reported that a newly added task appeared immediately. However, the original failure trace and the exact root cause were not captured.
 
@@ -255,50 +255,21 @@ The reported refresh defect was not reproduced. The successful manual recovery s
 
 ---
 
-## Week 2 Day 8 — Combined API Client Test Results
+## Week 2 Day 9 — Testing & Codex Review Fixes
 
 **Date:** 26 November 2026
 
-### Test Execution
+### Overview
+Performed automated test suite execution and Codex review cleanup.
 
-Command: `.\gradlew.bat :app:testDebugUnitTest --tests "com.example.employeetaskmanager.TaskApiClientTest"`
-
-### Results
-
-- Total tests: 9
-- Passed: 9
-- Failures: 0
-- Errors: 0
-- Skipped: 0
-- Gradle result: BUILD SUCCESSFUL.
-
-### Coverage
-
-- Successful API response.
-- HTTP 204 and HTTP 503.
-- HTTP 500 Internal Server Error.
-- Malformed JSON.
-- Missing required field.
-- Blank response body.
-- Network IOException.
-- Simulated read timeout.
-
-### Conclusion
-
-All nine TaskApiClient tests passed. Bug 1 and Bug 2 error-handling scenarios are covered by regression tests. Bug 3 refresh recovery was manually verified on the physical device; the reported defect was not reproduced.
-
-The simulated timeout does not establish actual physical-network timeout behavior.
-
-### Debugger Follow-up Evidence — Bug 1
-
-**Date:** 26 November 2026
-
-- Breakpoint observed at `TaskApiClient.kt:72`.
-- Test: `fetchTasks_malformedJson_returnsFailureAndDisconnects()`.
-- Malformed JSON reached `JSONArray(responseBody)`.
-- JSON parsing raised a `JSONException` or parsing exception.
-- Existing catch block returned `Result.failure(exception)`.
-- Existing finally block disconnected the HTTP connection.
-- Debug test result: 1 passed, 0 failed.
-
-**Conclusion:** Malformed JSON parser failure and exception-handling path verified through debugger observation and unit testing. Physical-device crash was not established.
+### Observations & Fixes
+- **Automated Tests:** Executed `./gradlew.bat :app:test`. Total: 25 passed, 0 failures, 0 errors, 0 skipped.
+- **APK Build:** Executed `./gradlew.bat :app:assembleDebug`. Generated APK at `app/build/outputs/apk/debug/app-debug.apk` (6,398,726 bytes).
+- **Codex Review Fixes:**
+  1. Removed duplicate `testImplementation(libs.junit)` declaration in `app/build.gradle.kts`.
+  2. Removed unused `import org.junit.Assert.assertTrue` in `TaskViewModelTest.kt`.
+- **Physical Device UI Verification:**
+  - Device: OPPO CPH1877 (`82ac82ae`).
+  - Installed via `adb install -r`.
+  - Navigation, priority creation, display/status, filters, dashboard counts, delete confirmation, and REST API loading/success states verified successfully (`PASS`).
+  - Screenshots saved under `docs/week 2/day 9/screenshots/`.
